@@ -1,8 +1,5 @@
 import java.awt.*;
 
-// 1) Добавить параметр смещения отностельно оси Х
-// 2) Разные типы башен (возможно не только башни)
-// 3) Механизм здоровья башни (200 >= MAX >= 150, 150 > MID >= 70, 70 > LOW >= 0)
 public class Tower {
 
     private int heath = 200;
@@ -18,6 +15,13 @@ public class Tower {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setStroke(new BasicStroke(3, BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_MITER));
+
+        g2d.setColor(new Color(135, 206, 250)); // светло-голубой
+        g2d.fillRect(0, 0, panelWidth, panelHeight);
+
+        drawClouds(g2d, panelWidth, panelHeight);
+        drawRocks(g2d, panelWidth, panelHeight);
+
 
         // Высота башни (от основания до вершины флага)
         int towerHeight = 300;
@@ -138,7 +142,35 @@ public class Tower {
         // Украшение на вершине флагштока
         g2d.setColor(Color.YELLOW);
         g2d.fillOval(flagPoleX - 4, flagPoleTopY - 4, 8, 8);
+    }
 
+    // облака
+    private void drawClouds(Graphics2D g2d, int width, int height) {
+        g2d.setColor(Color.WHITE);
+        // Облако 1
+        g2d.fillOval(width / 6, 60, 50, 30);
+        g2d.fillOval(width / 6 + 20, 50, 50, 35);
+        g2d.fillOval(width / 6 + 40, 60, 45, 30);
+        // Облако 2
+        g2d.fillOval(width / 2 - 30, 80, 50, 30);
+        g2d.fillOval(width / 2 - 10, 70, 55, 35);
+        g2d.fillOval(width / 2 + 15, 80, 50, 30);
+        // Облако 3
+        g2d.fillOval(4 * width / 5, 50, 50, 30);
+        g2d.fillOval(4 * width / 5 + 20, 40, 55, 35);
+        g2d.fillOval(4 * width / 5 + 40, 50, 45, 30);
+    }
+
+    //  камни
+    private void drawRocks(Graphics2D g2d, int width, int height) {
+        g2d.setColor(new Color(100, 90, 80));
+        // Левый камень
+        g2d.fillOval(width / 4 - 10, height - 60, 45, 37);
+        // Правый камень
+        g2d.fillOval(3 * width / 4 - 25, height - 55, 55, 45);
+        // Мелкие камни
+        g2d.fillOval(width / 3, height - 40, 30, 25);
+        g2d.fillOval(2 * width / 3 - 30, height - 45, 35, 30);
     }
 
     private void drawBattlements(Graphics2D g2d, int centerX, int topY, int width, int height, int count) {
