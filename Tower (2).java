@@ -1,3 +1,4 @@
+// Рябухин Никита ИСП 231
 import java.awt.*;
 
 public class Tower {
@@ -195,4 +196,5 @@ public class Tower {
                     battlementWidth - gapWidth, height);
         }
     }
+
 }
