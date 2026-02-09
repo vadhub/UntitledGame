@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Main {
-    // Морозенко - GameObject
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("Untitled Game");
         frame.setSize(400, 400);
