@@ -17,8 +17,13 @@ public class GameView extends JPanel {
         super.paint(g);
     }
 
+    public void draw(Graphics g) {
+        engine.render(g);
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        draw(g);
     }
 }

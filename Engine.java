@@ -38,23 +38,23 @@ public class Engine {
             public void run() {
                 for (int i = 0; i < pattern.size(); i++) {
                     GameObject elem = pattern.get(i);
-                
+
                     // копия объекта создаётся
                     GameObject newObject = new GameObject(
-                        elem.getId(),
-                        elem.getX(),
-                        elem.getY(),
-                        elem.getSize(),
-                        elem.getSpeed(),
-                        elem.getColor()
+                            elem.getId(),
+                            elem.getX(),
+                            elem.getY(),
+                            elem.getSize(),
+                            elem.getSpeed(),
+                            elem.getColor()
                     );
-                
+
                     // она добавляется в список
                     synchronized (objects) {
                         objects.add(newObject);
                         System.out.println("Объект " + newObject.getId() + " заспавнен");
                     }
-                
+
                     // задержка (очередь)
                     if (i < pattern.size() - 1) {
                         try {
@@ -68,7 +68,7 @@ public class Engine {
                 System.out.println("Общий спавн завершен");
             }
         });
-        
+
         spawnThread.start(); // запуск потока
     }
 
@@ -83,6 +83,17 @@ public class Engine {
     public void clearObjects() {
         objects.clear();
     }
+    public void render(Graphics g) {
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, screenWidth, screenHeight);
 
+        synchronized (objects) {
+            for (GameObject obj : objects) {
+                if (obj != null) {
+                    obj.draw(g);
+                }
+            }
+        }
+    }
 
 }
