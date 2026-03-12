@@ -4,16 +4,24 @@ import java.awt.*;
 public class Main {
 
     public static void main(String[] args) {
-        Engine engine = Engine.getInstance();
-        GameView gameView = new GameView(engine);
+        SwingUtilities.invokeLater(() -> createAndShowGUI());
+    }
+    private static void createAndShowGUI() {
         JFrame frame = new JFrame("Untitled Game");
-        frame.setSize(400, 400);
-        frame.setLayout(new BorderLayout());
-        frame.add(gameView);
-        frame.add(new Controls(engine), BorderLayout.SOUTH);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
 
+        GamePanel gamePanel = new GamePanel();
+        frame.add(gamePanel, BorderLayout.CENTER);
+        // JPanel controlPanel = new Control();
+        // frame.add(controlPanel, BorderLayout.SOUTH);
+
+        frame.pack();
+        frame.setVisible(true);
+        // startBackgroundAnimation(gamePanel);
+    }
+    private static void startBackgroundAnimation(GamePanel gamePanel) {
+        Timer timer = new Timer(50, e -> gamePanel.updateBackground());
+        timer.start();
     }
 }
