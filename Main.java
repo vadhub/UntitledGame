@@ -16,13 +16,19 @@ public class Main {
             CurrencyManager.getInstance();
 
             Engine engine = Engine.getInstance();
+            engine.clearObjects();
 
-            int towerX = engine.getScreenWidth() / 2 + 200;
+            int playerTowerX = engine.getScreenWidth() / 2 - 200;
+            int enemyTowerX = engine.getScreenWidth() / 2 + 200;
             int towerY = engine.getScreenHeight() - 180;
 
-            Tower tower = new Tower(1, (float) towerX, (float) towerY, 100, 0f);
-            tower.setFraction(2);
-            engine.spawnObject(tower);
+            Tower enemyTower = new Tower(1, (float) enemyTowerX, (float) towerY, 100, 0f);
+            enemyTower.setFraction(1);
+            engine.spawnObject(enemyTower);
+
+            Tower playerTower = new Tower(2, (float) playerTowerX, (float) towerY, 100, 0f);
+            playerTower.setFraction(2);
+            engine.spawnObject(playerTower);
 
             GameView gameView = new GameView(engine);
             JFrame frame = new JFrame("Tower Battle - Archer Defense");

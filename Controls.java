@@ -9,12 +9,14 @@ public class Controls extends JPanel {
         this.engine = game;
         this.currency = CurrencyManager.getInstance();
         setLayout(new FlowLayout());
+        int playerTowerX = game.getScreenWidth() / 2 - 200;
+        int playerSpawnX = playerTowerX + 80;
 
         // Кнопка BaseUnit - 3 у.к.
         add(new Button("Spawn BaseUnit", new BaseUnit(), () -> {
             BaseUnit baseUnit = new BaseUnit();
             baseUnit.setFraction(0);
-            baseUnit.setX(100);
+            baseUnit.setX(playerSpawnX);
             baseUnit.setY(game.getScreenHeight() - 150);
             baseUnit.setSize(90);
             baseUnit.setEngine(game);
@@ -26,7 +28,7 @@ public class Controls extends JPanel {
             if (currency.spend(5)) {
                 UnitArcher unitArcher = new UnitArcher();
                 unitArcher.setFraction(0);
-                unitArcher.setX(0);
+                unitArcher.setX(playerSpawnX);
                 unitArcher.setAttackRange(250);
                 unitArcher.setSize(50);
                 unitArcher.setY(game.getScreenHeight() - 250);
@@ -43,7 +45,7 @@ public class Controls extends JPanel {
             if (currency.spend(7)) {
                 UnitDinoRider unitDinoRider = new UnitDinoRider();
                 unitDinoRider.setFraction(0);
-                unitDinoRider.setX(0);
+                unitDinoRider.setX(playerSpawnX);
                 unitDinoRider.setY(game.getScreenHeight() - 250);
                 unitDinoRider.setSize(100);
                 unitDinoRider.setSpeed(1);
