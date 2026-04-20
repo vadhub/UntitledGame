@@ -68,9 +68,7 @@ public class UnitDinoRider extends GameObject {
             if (obj == null || !obj.isAlive()) continue;
             if (obj.getFraction() == fraction) continue;
 
-            // проверка по имени класса (Tower, Tower67 и т.д.)
-            String className = obj.getClass().getSimpleName();
-            if (className.contains("Tower")) {
+            if (obj.isTower()) {
                 return obj;
             }
         }

@@ -52,11 +52,10 @@ public class BaseUnit extends GameObject {
                     if (objects != null) {
                         for (GameObject obj : objects) {
                             if (obj == null) continue;
-                            String className = obj.getClass().getSimpleName();
-                            if (className.contains("Tower") && obj.isAlive()) {
+                            if (obj.isTower() && obj.isAlive()) {
                                 // НАШЛИ БАШНЮ - БЬЕМ!
                                 obj.takeDamage(attackDamage);
-                                System.out.println("⚾⚾⚾ BASE UNIT HITS " + className + " FOR " + attackDamage + " DAMAGE! ⚾⚾⚾");
+                                System.out.println("⚾⚾⚾ BASE UNIT HITS " + obj.getClass().getSimpleName() + " FOR " + attackDamage + " DAMAGE! ⚾⚾⚾");
                                 lastAttackTime = currentTime;
                                 break;
                             }

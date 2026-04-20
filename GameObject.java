@@ -118,6 +118,10 @@ public class GameObject implements Cloneable, Icon {
 
     }
 
+    public boolean isTower() {
+        return false;
+    }
+
     public boolean canAttack(float currentTime) {
         return currentTime - lastAttackTime >= attackCooldown;
     }
