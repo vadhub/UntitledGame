@@ -100,6 +100,10 @@ public class UnitDinoRider extends GameObject {
 
     @Override
     public void draw(Graphics g) {
+        draw(g, true);
+    }
+
+    private void draw(Graphics g, boolean showHealthBar) {
         int x = (int) this.x;
         int y = (int) this.y;
         float k = this.size / 100.0f;
@@ -200,7 +204,9 @@ public class UnitDinoRider extends GameObject {
         g2.fillPolygon(xPoints, yPoints, 3);
 
         // полоска здоровья
-        drawHealthBar(g2, x, y, k);
+        if (showHealthBar) {
+            drawHealthBar(g2, x, y, k);
+        }
     }
 
     private void drawHealthBar(Graphics2D g2d, int x, int y, float k) {
@@ -226,6 +232,6 @@ public class UnitDinoRider extends GameObject {
     public void paintIcon(Component c, Graphics g, int x, int y) {
         this.x = x;
         this.y = y + 40;
-        draw(g);
+        draw(g, false);
     }
 }

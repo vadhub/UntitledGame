@@ -87,6 +87,10 @@ public class UnitArcher extends GameObject {
 
     @Override
     public void draw(Graphics g) {
+        draw(g, true);
+    }
+
+    private void draw(Graphics g, boolean showHealthBar) {
         float k = this.size / 100.0f;
         if (k <= 0) k = 1.0f;
 
@@ -142,7 +146,9 @@ public class UnitArcher extends GameObject {
         }
 
         // полоска здоровья
-        drawHealthBar(g2d, k);
+        if (showHealthBar) {
+            drawHealthBar(g2d, k);
+        }
     }
 
     private void drawHealthBar(Graphics2D g2d, float k) {
@@ -171,7 +177,7 @@ public class UnitArcher extends GameObject {
     public void paintIcon(Component c, Graphics g, int x, int y) {
         this.x = x;
         this.y = y;
-        draw(g);
+        draw(g, false);
     }
 
     @Override
