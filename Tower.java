@@ -48,10 +48,12 @@ public class Tower extends GameObject {
     private int maxHealth;
     private int currentHealth;
     private float xOffset;
+    private float degradeThresholdStoneToWooden;
+    private float degradeThresholdWoodenToRuined;
 
     // Пороги деградации (в процентах от максимального здоровья)
-    private static final float DEGRADE_THRESHOLD_1 = 0.5f;  // При 50% HP: STONE → WOODEN
-    private static final float DEGRADE_THRESHOLD_2 = 0.2f;  // При 20% HP: WOODEN → RUINED
+    private static final float DEFAULT_DEGRADE_THRESHOLD_1 = 0.5f;  // При 50% HP: STONE → WOODEN
+    private static final float DEFAULT_DEGRADE_THRESHOLD_2 = 0.2f;  // При 20% HP: WOODEN → RUINED
 
     // Константы для отрисовки
     private static final int TOWER_HEIGHT = 300;
@@ -64,19 +66,40 @@ public class Tower extends GameObject {
 
     // Конструктор с типом башни
     public Tower(int id, float x, float y, int size, float heal, TowerType type, float xOffset) {
+        this(id, x, y, size, heal, type, xOffset,
+                DEFAULT_DEGRADE_THRESHOLD_1, DEFAULT_DEGRADE_THRESHOLD_2);
+    }
+
+    public Tower(int id, float x, float y, int size, float heal, TowerType type, float xOffset,
+                 float degradeThresholdStoneToWooden, float degradeThresholdWoodenToRuined) {
         super(id, x, y, size, heal);
         this.towerType = type;
         this.xOffset = xOffset;
+        validateThresholds(degradeThresholdStoneToWooden, degradeThresholdWoodenToRuined);
+        this.degradeThresholdStoneToWooden = degradeThresholdStoneToWooden;
+        this.degradeThresholdWoodenToRuined = degradeThresholdWoodenToRuined;
         this.maxHealth = type.getMaxHealth();
         this.currentHealth = maxHealth;
         this.health = maxHealth;
 
-        System.out.println("Создана " + type.getName() + " башня (Уровень " + type.getLevel() + ") с HP: " + maxHealth);
+        System.out.println("Tower created: " + type.getName() + " (level " + type.getLevel() + ") with HP: " + maxHealth);
     }
 
     // Конструктор для обратной совместимости
     public Tower(int id, float x, float y, int size, float heal) {
         this(id, x, y, size, heal, TowerType.STONE, 0);
+    }
+
+    private void validateThresholds(float degradeThresholdStoneToWooden, float degradeThresholdWoodenToRuined) {
+        if (degradeThresholdStoneToWooden < 0f || degradeThresholdStoneToWooden > 1f) {
+            throw new IllegalArgumentException("degradeThresholdStoneToWooden must be between 0 and 1");
+        }
+        if (degradeThresholdWoodenToRuined < 0f || degradeThresholdWoodenToRuined > 1f) {
+            throw new IllegalArgumentException("degradeThresholdWoodenToRuined must be between 0 and 1");
+        }
+        if (degradeThresholdWoodenToRuined > degradeThresholdStoneToWooden) {
+            throw new IllegalArgumentException("wooden-to-ruined threshold cannot exceed stone-to-wooden threshold");
+        }
     }
 
     // Получение урона с деградацией
@@ -124,11 +147,11 @@ public class Tower extends GameObject {
         float healthPercent = (float) currentHealth / maxHealth;
 
         // Деградация с камня на дерево
-        if (towerType == TowerType.STONE && healthPercent <= DEGRADE_THRESHOLD_1) {
+        if (towerType == TowerType.STONE && healthPercent <= degradeThresholdStoneToWooden) {
             degradeTo(TowerType.WOODEN);
         }
         // Деградация с дерева на руины
-        else if (towerType == TowerType.WOODEN && healthPercent <= DEGRADE_THRESHOLD_2) {
+        else if (towerType == TowerType.WOODEN && healthPercent <= degradeThresholdWoodenToRuined) {
             degradeTo(TowerType.RUINED);
         }
     }
@@ -194,9 +217,9 @@ public class Tower extends GameObject {
     private void checkAndUpgradeFromHeal() {
         float healthPercent = (float) currentHealth / maxHealth;
 
-        if (towerType == TowerType.RUINED && healthPercent > DEGRADE_THRESHOLD_2) {
+        if (towerType == TowerType.RUINED && healthPercent > degradeThresholdWoodenToRuined) {
             upgradeTo(TowerType.WOODEN);
-        } else if (towerType == TowerType.WOODEN && healthPercent > DEGRADE_THRESHOLD_1) {
+        } else if (towerType == TowerType.WOODEN && healthPercent > degradeThresholdStoneToWooden) {
             upgradeTo(TowerType.STONE);
         }
     }
@@ -232,8 +255,8 @@ public class Tower extends GameObject {
     public void setXOffset(float xOffset) { this.xOffset = xOffset; }
 
     // Получение порогов деградации
-    public float getDegradeThreshold1() { return DEGRADE_THRESHOLD_1; }
-    public float getDegradeThreshold2() { return DEGRADE_THRESHOLD_2; }
+    public float getDegradeThreshold1() { return degradeThresholdStoneToWooden; }
+    public float getDegradeThreshold2() { return degradeThresholdWoodenToRuined; }
     public float getCurrentHealthPercent() { return (float) currentHealth / maxHealth; }
 
     // Получение цвета здоровья для отображения
@@ -462,23 +485,21 @@ public class Tower extends GameObject {
     }
 
     private void drawDegradeIndicators(Graphics2D g2d, int centerX, int baseY) {
-        float healthPercent = (float) currentHealth / maxHealth;
         int indicatorY = baseY - TOWER_HEIGHT - 35;
 
-        // Отображаем пороги деградации
         if (towerType == TowerType.STONE) {
-            // Показываем, когда начнётся деградация (50%)
-            int thresholdX = centerX - 50 + (int)(DEGRADE_THRESHOLD_1 * 100);
+            int thresholdPercent = Math.round(degradeThresholdStoneToWooden * 100);
+            int thresholdX = centerX - 50 + thresholdPercent;
             g2d.setColor(new Color(255, 100, 0, 100));
-            g2d.fillRect(centerX - 50, indicatorY - 10, (int)(DEGRADE_THRESHOLD_1 * 100), 5);
+            g2d.fillRect(centerX - 50, indicatorY - 10, thresholdPercent, 5);
             g2d.setColor(Color.ORANGE);
-            g2d.drawString("↓ Деградация при 50%", thresholdX - 40, indicatorY - 5);
+            g2d.drawString("Degrade at " + thresholdPercent + "%", thresholdX - 40, indicatorY - 5);
         } else if (towerType == TowerType.WOODEN) {
-            // Показываем, когда начнётся деградация (20%)
+            int thresholdPercent = Math.round(degradeThresholdWoodenToRuined * 100);
             g2d.setColor(new Color(255, 0, 0, 100));
-            g2d.fillRect(centerX - 50, indicatorY - 10, (int)(DEGRADE_THRESHOLD_2 * 100), 5);
+            g2d.fillRect(centerX - 50, indicatorY - 10, thresholdPercent, 5);
             g2d.setColor(Color.RED);
-            g2d.drawString("↓ Деградация при 20%", centerX - 45, indicatorY - 5);
+            g2d.drawString("Degrade at " + thresholdPercent + "%", centerX - 45, indicatorY - 5);
         }
     }
 }
