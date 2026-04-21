@@ -37,7 +37,7 @@ public class UnitArcher extends GameObject {
 
         // выбор цели, если её нет или она мертва
         if (currentTarget == null || !currentTarget.isAlive()) {
-            currentTarget = findTower();
+            currentTarget = findEnemyTower();
         }
 
         if (currentTarget != null) {
@@ -59,13 +59,11 @@ public class UnitArcher extends GameObject {
     /**
      * Поиск башни на карте.
      */
-    private GameObject findTower() {
+    private GameObject findEnemyTower() {
         List<GameObject> objects = engine.getObjects();
         for (GameObject obj : objects) {
             if (obj == null || !obj.isAlive()) continue;
-            if (obj.getFraction() == fraction) continue;
-
-            if (obj.isTower()) {
+            if (obj instanceof Tower && obj.getFraction() != fraction) {
                 return obj;
             }
         }

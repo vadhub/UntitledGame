@@ -224,11 +224,6 @@ public class Tower extends GameObject {
         System.out.println("💀 " + towerType.getName() + " башня разрушена!");
     }
 
-    @Override
-    public boolean isTower() {
-        return true;
-    }
-
     // Геттеры
     public int getCurrentHealth() { return currentHealth; }
     public int getMaxHealth() { return maxHealth; }

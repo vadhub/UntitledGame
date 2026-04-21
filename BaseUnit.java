@@ -8,10 +8,6 @@ public class BaseUnit extends GameObject {
     private static final float BASE_ATTACK_COOLDOWN = 1f;
     private float lastAttackTime = -5f;
 
-    // КООРДИНАТЫ БАШНИ (ПОМЕНЯЙ НА СВОИ)
-    private static final float TOWER_X = 500;
-    private static final float TOWER_Y = 300;
-
     public BaseUnit() {
         this.fraction = 2;
     }
@@ -32,9 +28,12 @@ public class BaseUnit extends GameObject {
     public void update(float deltaTime) {
         if (!isAlive) return;
 
-        // ДВИГАЕМСЯ К БАШНЕ
-        float dx = TOWER_X - x;
-        float dy = TOWER_Y - y;
+        GameObject targetTower = findEnemyTower();
+        if (targetTower == null) return;
+
+        // ДВИГАЕМСЯ К ВРАЖЕСКОЙ БАШНЕ
+        float dx = targetTower.getX() - x;
+        float dy = targetTower.getY() - y;
         float dist = (float) Math.sqrt(dx * dx + dy * dy);
 
         if (dist > 10) {
@@ -47,23 +46,26 @@ public class BaseUnit extends GameObject {
             if (engine != null) {
                 float currentTime = engine.getGameTime();
                 if (currentTime - lastAttackTime >= attackCooldown) {
-                    // ИЩЕМ БАШНЮ ВО ВСЕХ ОБЪЕКТАХ
-                    List<GameObject> objects = engine.getObjects();
-                    if (objects != null) {
-                        for (GameObject obj : objects) {
-                            if (obj == null) continue;
-                            if (obj.isTower() && obj.isAlive()) {
-                                // НАШЛИ БАШНЮ - БЬЕМ!
-                                obj.takeDamage(attackDamage);
-                                System.out.println("⚾⚾⚾ BASE UNIT HITS " + obj.getClass().getSimpleName() + " FOR " + attackDamage + " DAMAGE! ⚾⚾⚾");
-                                lastAttackTime = currentTime;
-                                break;
-                            }
-                        }
-                    }
+                    // НАШЛИ ВРАЖЕСКУЮ БАШНЮ - БЬЕМ!
+                    targetTower.takeDamage(attackDamage);
+                    System.out.println("⚾⚾⚾ BASE UNIT HITS " + targetTower.getClass().getSimpleName() + " FOR " + attackDamage + " DAMAGE! ⚾⚾⚾");
+                    lastAttackTime = currentTime;
                 }
             }
         }
+    }
+
+    private GameObject findEnemyTower() {
+        List<GameObject> objects = engine.getObjects();
+        if (objects == null) return null;
+
+        for (GameObject obj : objects) {
+            if (obj == null || !obj.isAlive()) continue;
+            if (obj instanceof Tower && obj.getFraction() != fraction) {
+                return obj;
+            }
+        }
+        return null;
     }
 
     @Override

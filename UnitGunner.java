@@ -105,7 +105,7 @@ public class UnitGunner extends GameObject {
             if (obj == this) continue;  // пропускаем себя
 
             // пропускаем башню
-            if (obj.getClass().getSimpleName().contains("Tower")) continue;
+            if (obj instanceof Tower) continue;
 
             // пропускаем других ганнеров (чтобы не дрались между собой)
             if (obj.getClass().getSimpleName().equals("UnitGunner")) continue;
