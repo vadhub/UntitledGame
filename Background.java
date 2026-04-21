@@ -1,3 +1,4 @@
+// Background.java (обновлённая версия)
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -5,21 +6,34 @@ import java.util.Random;
 
 public class Background {
     private List<Tree> trees;
+    private List<Grass> grasses;  // ← список травы
     private Random rand;
+
+    private static final int GRASS_COUNT = 80;  // 80 кустиков травы на фоне
 
     public Background() {
         trees = new ArrayList<>();
+        grasses = new ArrayList<>();
         rand = new Random();
         generateTrees();
+        generateGrasses();  // трава генерируется здесь, один раз
+    }
+
+    private void generateGrasses() {
+        for (int i = 0; i < GRASS_COUNT; i++) {
+            float x = rand.nextFloat() * 1200;  // ширина игрового поля
+            float y = 0;  // временно, Y будет установлен при отрисовке
+            grasses.add(new Grass(x, y));
+        }
     }
 
     private void generateTrees() {
-        // Создаем 5 деревьев с разными позициями
-        trees.add(new Tree(1, 100, 450, false));   // лиственное слева
-        trees.add(new Tree(2, 300, 420, true));    // ель слева-центр
-        trees.add(new Tree(3, 500, 460, false));   // лиственное центр
-        trees.add(new Tree(4, 700, 430, true));    // ель справа-центр
-        trees.add(new Tree(5, 900, 440, false));   // лиственное справа
+        trees.add(new Tree(1, 100, 450, false));
+        trees.add(new Tree(2, 300, 420, true));
+        trees.add(new Tree(3, 500, 460, false));
+        trees.add(new Tree(4, 700, 430, true));
+        trees.add(new Tree(5, 900, 440, false));
+        trees.add(new Tree(6, 1100, 450, true));
     }
 
     public void draw(Graphics g, int panelWidth, int panelHeight) {
@@ -31,11 +45,14 @@ public class Background {
         drawSky(g2d, panelWidth, panelHeight);
         drawClouds(g2d, panelWidth, panelHeight);
         drawGround(g2d, panelWidth, panelHeight);
-        drawTrees(g2d, panelHeight);
 
-        g2d.setStroke(originalStroke);
-        g2d.setColor(originalColor);
+        // ★ ТРАВА рисуется на земле ★
+        drawGrasses(g2d, panelWidth, panelHeight);
+
+        drawRocks(g2d, panelWidth, panelHeight);
+        drawTrees(g2d, panelHeight);
     }
+
 
     private void drawSky(Graphics2D g2d, int width, int height) {
         GradientPaint skyGradient = new GradientPaint(
@@ -64,16 +81,32 @@ public class Background {
 
     private void drawGround(Graphics2D g2d, int width, int height) {
         int groundHeight = 50;
-        g2d.setColor(new Color(34, 139, 34)); // ForestGreen
+        g2d.setColor(new Color(34, 139, 34));
         g2d.fillRect(0, height - groundHeight, width, groundHeight);
-        drawRocks(g2d, width, height - groundHeight);
         g2d.setColor(new Color(20, 80, 20));
         g2d.setStroke(new BasicStroke(2));
         g2d.drawLine(0, height - groundHeight, width, height - groundHeight);
     }
 
-    private void drawRocks(Graphics2D g2d, int width, int groundY) {
-        g2d.setColor(new Color(105, 105, 105)); // DarkGray для камней
+    // ★ НОВЫЙ МЕТОД — рисуем траву на земле ★
+    private void drawGrasses(Graphics2D g2d, int panelWidth, int panelHeight) {
+        int groundY = panelHeight - 50;
+
+        for (Grass grass : grasses) {
+            // X циклически по ширине экрана
+            float x = grass.getX() % panelWidth;
+            // Y фиксированная — на земле
+            float y = groundY - 1;
+
+            grass.setX(x);
+            grass.setY(y);
+            grass.draw(g2d);
+        }
+    }
+
+    private void drawRocks(Graphics2D g2d, int width, int height) {
+        int groundY = height - 50;
+        g2d.setColor(new Color(105, 105, 105));
         g2d.setStroke(new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         drawRock(g2d, width * 1/8, groundY, 30, 20);
         drawRock(g2d, width * 7/8, groundY, 40, 25);
@@ -84,26 +117,13 @@ public class Background {
 
     private void drawRock(Graphics2D g2d, int x, int groundY, int width, int height) {
         int[] xPoints = {
-                x,
-                x + width/4,
-                x + width/2,
-                x + width * 3/4,
-                x + width,
-                x + width * 3/4,
-                x + width/2,
-                x + width/4
+                x, x + width/4, x + width/2, x + width * 3/4, x + width,
+                x + width * 3/4, x + width/2, x + width/4
         };
         int[] yPoints = {
-                groundY,
-                groundY - height/2,
-                groundY - height,
-                groundY - height * 3/4,
-                groundY - height/3,
-                groundY - height/4,
-                groundY - height/2,
-                groundY - height/3
+                groundY, groundY - height/2, groundY - height, groundY - height * 3/4,
+                groundY - height/3, groundY - height/4, groundY - height/2, groundY - height/3
         };
-
         g2d.fillPolygon(xPoints, yPoints, 8);
         g2d.setColor(Color.BLACK);
         g2d.drawPolygon(xPoints, yPoints, 8);
