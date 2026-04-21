@@ -4,24 +4,31 @@ import java.util.List;
 
 public class BaseUnit extends GameObject {
 
-    private static final float BASE_SPEED = 150f;
+    public static final float DEFAULT_SPEED = 150f;
+    public static final float DEFAULT_ATTACK_RANGE = 10f;
+    public static final int DEFAULT_SIZE = 90;
+
     private static final float BASE_ATTACK_COOLDOWN = 1f;
+    private static final int BASE_DAMAGE = 50;
+    private static final int BASE_HEALTH = 100;
+    private static final int PLAYER_FRACTION = 2;
+    private static final int PLAYER_DIRECTION = 1;
+    private static final float MIN_ATTACK_DISTANCE = 10f;
+
     private float lastAttackTime = -5f;
 
-    // КООРДИНАТЫ БАШНИ (ПОМЕНЯЙ НА СВОИ)
-    private static final float TOWER_X = 500;
-    private static final float TOWER_Y = 300;
-
     public BaseUnit() {
-        this.fraction = 2;
+        this(-1, 0, 0, DEFAULT_SIZE, DEFAULT_SPEED);
     }
 
     public BaseUnit(int id, float x, float y, int size, float speed) {
-        super(id, x, y, size, BASE_SPEED, Color.BLACK);
+        super(id, x, y, size, speed, Color.BLACK);
         attackCooldown = BASE_ATTACK_COOLDOWN;
-        attackDamage = 50;  // УВЕЛИЧИЛ УРОН
-        health = 100;
-        fraction = 2;
+        attackDamage = BASE_DAMAGE;
+        attackRange = DEFAULT_ATTACK_RANGE;
+        health = BASE_HEALTH;
+        fraction = PLAYER_FRACTION;
+        direction = PLAYER_DIRECTION;
     }
 
     public void setEngine(Engine engine) {
@@ -30,45 +37,52 @@ public class BaseUnit extends GameObject {
 
     @Override
     public void update(float deltaTime) {
-        if (!isAlive) return;
+        if (!isAlive || engine == null) {
+            return;
+        }
 
-        // ДВИГАЕМСЯ К БАШНЕ
-        float dx = TOWER_X - x;
-        float dy = TOWER_Y - y;
+        GameObject targetTower = findEnemyTower();
+        if (targetTower == null) {
+            return;
+        }
+
+        float dx = targetTower.getX() - x;
+        float dy = targetTower.getY() - y;
         float dist = (float) Math.sqrt(dx * dx + dy * dy);
 
-        if (dist > 10) {
-            // Движение
+        if (dist > MIN_ATTACK_DISTANCE) {
             float angle = (float) Math.atan2(dy, dx);
-            x += Math.cos(angle) * BASE_SPEED * deltaTime;
-            y += Math.sin(angle) * BASE_SPEED * deltaTime;
+            x += Math.cos(angle) * speed * deltaTime;
+            y += Math.sin(angle) * speed * deltaTime;
         } else {
-            // БЬЕМ БАШНЮ КАЖДУЮ СЕКУНДУ
-            if (engine != null) {
-                float currentTime = engine.getGameTime();
-                if (currentTime - lastAttackTime >= attackCooldown) {
-                    // ИЩЕМ БАШНЮ ВО ВСЕХ ОБЪЕКТАХ
-                    List<GameObject> objects = engine.getObjects();
-                    if (objects != null) {
-                        for (GameObject obj : objects) {
-                            if (obj == null) continue;
-                            String className = obj.getClass().getSimpleName();
-                            if (className.contains("Tower") && obj.isAlive()) {
-                                // НАШЛИ БАШНЮ - БЬЕМ!
-                                obj.takeDamage(attackDamage);
-                                System.out.println("⚾⚾⚾ BASE UNIT HITS " + className + " FOR " + attackDamage + " DAMAGE! ⚾⚾⚾");
-                                lastAttackTime = currentTime;
-                                break;
-                            }
-                        }
-                    }
-                }
+            float currentTime = engine.getGameTime();
+            if (currentTime - lastAttackTime >= attackCooldown) {
+                targetTower.takeDamage(attackDamage);
+                System.out.println("BASE UNIT HITS " + targetTower.getClass().getSimpleName() + " FOR " + attackDamage + " DAMAGE!");
+                lastAttackTime = currentTime;
             }
         }
     }
 
+    private GameObject findEnemyTower() {
+        List<GameObject> objects = engine.getObjects();
+        for (GameObject obj : objects) {
+            if (obj == null || !obj.isAlive()) continue;
+            if (obj.getFraction() == fraction) continue;
+
+            if (obj instanceof Tower) {
+                return obj;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void draw(Graphics g) {
+        draw(g, true);
+    }
+
+    private void draw(Graphics g, boolean showHealthBar) {
         float k = this.size / 100.0f;
         if (k <= 0) k = 1.0f;
 
@@ -139,7 +153,9 @@ public class BaseUnit extends GameObject {
                 Math.round(bx + 105 * k), Math.round(by - 8 * k));
         gBat.dispose();
 
-        drawHealthBar(g2, k);
+        if (showHealthBar) {
+            drawHealthBar(g2, k);
+        }
     }
 
     private void drawHealthBar(Graphics2D g2d, float k) {
@@ -161,7 +177,7 @@ public class BaseUnit extends GameObject {
     public void paintIcon(Component c, Graphics g, int x, int y) {
         this.x = x;
         this.y = y + 40;
-        draw(g);
+        draw(g, false);
     }
 
     @Override
