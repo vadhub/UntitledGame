@@ -176,11 +176,48 @@ public class GameObject implements Cloneable, Icon {
      * @param g графика
      */
     public void draw(Graphics g) {
+        draw(g, true);
+    }
+
+    protected void draw(Graphics g, boolean showHealthBar) {
+        drawUnit(g);
+        if (showHealthBar) {
+            drawHealthBar(g);
+        }
+    }
+
+    protected void drawUnit(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setColor(color);
         g2d.fill(new Rectangle2D.Float(x, y, size, size)); // float coords
+    }
+
+    protected void drawHealthBar(Graphics g) {
+    }
+
+    protected void drawRectHealthBar(Graphics2D g2d, int barX, int barY, int barWidth, int barHeight,
+                                     int currentHealth, int maxHealth) {
+        g2d.setColor(Color.RED);
+        g2d.fillRect(barX, barY, barWidth, barHeight);
+
+        g2d.setColor(Color.GREEN);
+        int healthWidth = (int) ((float) currentHealth / maxHealth * barWidth);
+        healthWidth = Math.max(0, Math.min(barWidth, healthWidth));
+        g2d.fillRect(barX, barY, healthWidth, barHeight);
+
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(barX, barY, barWidth, barHeight);
+    }
+
+    protected float getScaleFactor() {
+        float k = this.size / 100.0f;
+        return k <= 0 ? 1.0f : k;
+    }
+
+    protected int getIconOffsetY() {
+        return 0;
     }
 
     public float getX() {
@@ -332,8 +369,8 @@ public class GameObject implements Cloneable, Icon {
     @Override
     public void paintIcon(Component c, Graphics g, int x, int y) {
         this.x = x;
-        this.y = y;
-        draw(g);
+        this.y = y + getIconOffsetY();
+        draw(g, false);
     }
 
     /**

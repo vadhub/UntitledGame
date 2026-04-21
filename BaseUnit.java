@@ -68,13 +68,8 @@ public class BaseUnit extends GameObject {
     }
 
     @Override
-    public void draw(Graphics g) {
-        draw(g, true);
-    }
-
-    private void draw(Graphics g, boolean showHealthBar) {
-        float k = this.size / 100.0f;
-        if (k <= 0) k = 1.0f;
+    protected void drawUnit(Graphics g) {
+        float k = getScaleFactor();
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -142,32 +137,22 @@ public class BaseUnit extends GameObject {
         gBat.drawLine(Math.round(bx + 20 * k), Math.round(by - 2 * k),
                 Math.round(bx + 105 * k), Math.round(by - 8 * k));
         gBat.dispose();
-
-        if (showHealthBar) {
-            drawHealthBar(g2, k);
-        }
     }
 
-    private void drawHealthBar(Graphics2D g2d, float k) {
+    @Override
+    protected void drawHealthBar(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        float k = getScaleFactor();
         int barWidth = 60;
         int barHeight = 8;
         int barX = Math.round(x + 5 * k);
         int barY = Math.round(y - 10 * k);
-        g2d.setColor(Color.RED);
-        g2d.fillRect(barX, barY, barWidth, barHeight);
-        g2d.setColor(Color.GREEN);
-        int healthPercent = (int) ((float) health / 100f * barWidth);
-        healthPercent = Math.max(0, Math.min(barWidth, healthPercent));
-        g2d.fillRect(barX, barY, healthPercent, barHeight);
-        g2d.setColor(Color.BLACK);
-        g2d.drawRect(barX, barY, barWidth, barHeight);
+        drawRectHealthBar(g2d, barX, barY, barWidth, barHeight, health, 100);
     }
 
     @Override
-    public void paintIcon(Component c, Graphics g, int x, int y) {
-        this.x = x;
-        this.y = y + 40;
-        draw(g, false);
+    protected int getIconOffsetY() {
+        return 40;
     }
 
     @Override

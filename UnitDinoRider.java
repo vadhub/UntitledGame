@@ -99,15 +99,10 @@ public class UnitDinoRider extends GameObject {
     }
 
     @Override
-    public void draw(Graphics g) {
-        draw(g, true);
-    }
-
-    private void draw(Graphics g, boolean showHealthBar) {
+    protected void drawUnit(Graphics g) {
         int x = (int) this.x;
         int y = (int) this.y;
-        float k = this.size / 100.0f;
-        if (k <= 0) k = 1.0f;
+        float k = getScaleFactor();
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -203,35 +198,23 @@ public class UnitDinoRider extends GameObject {
         };
         g2.fillPolygon(xPoints, yPoints, 3);
 
-        // полоска здоровья
-        if (showHealthBar) {
-            drawHealthBar(g2, x, y, k);
-        }
     }
 
-    private void drawHealthBar(Graphics2D g2d, int x, int y, float k) {
+    @Override
+    protected void drawHealthBar(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        int x = (int) this.x;
+        int y = (int) this.y;
+        float k = getScaleFactor();
         int barWidth = 80;
         int barHeight = 8;
         int barX = Math.round(x + 10 * k);
         int barY = Math.round(y - 15 * k);
-
-        g2d.setColor(Color.RED);
-        g2d.fillRect(barX, barY, barWidth, barHeight);
-
-        g2d.setColor(Color.GREEN);
-        int healthPercent = (int) ((float) health / DINO_HEALTH * barWidth);
-        healthPercent = Math.max(0, Math.min(barWidth, healthPercent));
-        g2d.fillRect(barX, barY, healthPercent, barHeight);
-
-        g2d.setColor(Color.BLACK);
-        g2d.setStroke(new BasicStroke(1));
-        g2d.drawRect(barX, barY, barWidth, barHeight);
+        drawRectHealthBar(g2d, barX, barY, barWidth, barHeight, health, DINO_HEALTH);
     }
 
     @Override
-    public void paintIcon(Component c, Graphics g, int x, int y) {
-        this.x = x;
-        this.y = y + 40;
-        draw(g, false);
+    protected int getIconOffsetY() {
+        return 40;
     }
 }

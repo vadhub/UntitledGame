@@ -86,13 +86,8 @@ public class UnitArcher extends GameObject {
     }
 
     @Override
-    public void draw(Graphics g) {
-        draw(g, true);
-    }
-
-    private void draw(Graphics g, boolean showHealthBar) {
-        float k = this.size / 100.0f;
-        if (k <= 0) k = 1.0f;
+    protected void drawUnit(Graphics g) {
+        float k = getScaleFactor();
 
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -145,39 +140,17 @@ public class UnitArcher extends GameObject {
                     Math.round(x - 10 * k), Math.round(y + yOffset * k));
         }
 
-        // полоска здоровья
-        if (showHealthBar) {
-            drawHealthBar(g2d, k);
-        }
     }
 
-    private void drawHealthBar(Graphics2D g2d, float k) {
+    @Override
+    protected void drawHealthBar(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        float k = getScaleFactor();
         int barWidth = 60;
         int barHeight = 8;
         int barX = Math.round(x + 5 * k);
         int barY = Math.round(y - 10 * k);
-
-        // фон (красный)
-        g2d.setColor(Color.RED);
-        g2d.fillRect(barX, barY, barWidth, barHeight);
-
-        // текущее здоровье (зелёный)
-        g2d.setColor(Color.GREEN);
-        int healthPercent = (int) ((float) health / 100f * barWidth);
-        healthPercent = Math.max(0, Math.min(barWidth, healthPercent));
-        g2d.fillRect(barX, barY, healthPercent, barHeight);
-
-        // рамка
-        g2d.setColor(Color.BLACK);
-        g2d.setStroke(new BasicStroke(1));
-        g2d.drawRect(barX, barY, barWidth, barHeight);
-    }
-
-    @Override
-    public void paintIcon(Component c, Graphics g, int x, int y) {
-        this.x = x;
-        this.y = y;
-        draw(g, false);
+        drawRectHealthBar(g2d, barX, barY, barWidth, barHeight, health, 100);
     }
 
     @Override
