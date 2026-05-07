@@ -1,27 +1,22 @@
 import java.awt.*;
 import java.util.List;
 
-/**
- * Всадник на динозавре: спавнится, идёт к башне,
- * останавливается и атакует, пока башня не разрушится.
- *
- * by Bebron28 & AmericanCoolBoyUSA777
- */
 public class UnitDinoRider extends GameObject {
-
     private GameObject currentTarget;
-
     // настройки динозавра (сильнее лучника)
-    private static final float DINO_SPEED = 4f;
+    private static final float DINO_SPEED = 20f;
     private static final float DINO_ATTACK_RANGE = 300f;
     private static final float DINO_ATTACK_COOLDOWN = 1.5f;
     private static final int DINO_DAMAGE = 40;
     private static final int DINO_HEALTH = 200;
     private static final float SPEAR_SPEED = 600f;
 
-    // КОНСТРУКТОР БЕЗ ПАРАМЕТРОВ ДЛЯ СПАВНА ЧЕРЕЗ РЕФЛЕКСИЮ
+    // Флаг для управления отрисовкой HP на иконке
+    private boolean showHealthBar = true;
+
     public UnitDinoRider() {
         this.fraction = 2;
+        this.y = 470;
     }
 
     public UnitDinoRider(int id, float x, float y, int size, float speed) {
@@ -38,6 +33,11 @@ public class UnitDinoRider extends GameObject {
     public void update(float deltaTime) {
         if (!isAlive) return;
 
+        // Проверяем, нет ли впереди союзника на той же линии
+        if (isBlockedByAlly()) {
+            return;
+        }
+
         // выбор цели, если её нет или она мертва
         if (currentTarget == null || !currentTarget.isAlive()) {
             currentTarget = findTower();
@@ -47,8 +47,12 @@ public class UnitDinoRider extends GameObject {
             float dist = distanceTo(currentTarget);
 
             if (dist > attackRange) {
-                // движение к башне
-                moveTowards(currentTarget, deltaTime);
+                // ДВИЖЕНИЕ ТОЛЬКО ПО ГОРИЗОНТАЛИ (не меняем Y)
+                if (currentTarget.getX() > this.x) {
+                    this.x += DINO_SPEED * deltaTime;
+                } else {
+                    this.x -= DINO_SPEED * deltaTime;
+                }
             } else {
                 // атака в радиусе поражения
                 if (canAttack(engine.getGameTime())) {
@@ -59,15 +63,28 @@ public class UnitDinoRider extends GameObject {
         }
     }
 
-    /**
-     * Поиск башни на карте.
-     */
+    private boolean isBlockedByAlly() {
+        if (engine == null) return false;
+        List<GameObject> objects = engine.getObjects();
+        if (objects == null) return false;
+
+        for (GameObject obj : objects) {
+            if (obj == null || !obj.isAlive() || obj == this) continue;
+            if (obj.getFraction() != this.fraction) continue;
+
+            // Проверяем, находится ли объект прямо перед нами на той же линии (±10px по Y)
+            if (Math.abs(obj.getY() - this.y) < 10 && obj.getX() > this.x && obj.getX() - this.x < 50) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private GameObject findTower() {
         List<GameObject> objects = engine.getObjects();
         for (GameObject obj : objects) {
             if (obj == null || !obj.isAlive()) continue;
             if (obj.getFraction() == fraction) continue;
-
             // проверка по имени класса (Tower, Tower67 и т.д.)
             String className = obj.getClass().getSimpleName();
             if (className.contains("Tower")) {
@@ -77,9 +94,6 @@ public class UnitDinoRider extends GameObject {
         return null;
     }
 
-    /**
-     * Бросок копья по цели.
-     */
     private void throwSpearAt(GameObject target) {
         float angle = Arrow.calculateArrowAngle(x, y, target.getX(), target.getY(), SPEAR_SPEED);
         Arrow spear = new Arrow(x, y, angle, SPEAR_SPEED);
@@ -94,7 +108,6 @@ public class UnitDinoRider extends GameObject {
         if (health <= 0) {
             health = 0;
             isAlive = false;
-            System.out.println("🦖 Всадник на динозавре убит!");
         }
     }
 
@@ -104,7 +117,6 @@ public class UnitDinoRider extends GameObject {
         int y = (int) this.y;
         float k = this.size / 100.0f;
         if (k <= 0) k = 1.0f;
-
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
@@ -199,8 +211,10 @@ public class UnitDinoRider extends GameObject {
         };
         g2.fillPolygon(xPoints, yPoints, 3);
 
-        // полоска здоровья
-        drawHealthBar(g2, x, y, k);
+        // Полоска здоровья - рисуем только если флаг включен
+        if (showHealthBar) {
+            drawHealthBar(g2, x, y, k);
+        }
     }
 
     private void drawHealthBar(Graphics2D g2d, int x, int y, float k) {
@@ -224,8 +238,14 @@ public class UnitDinoRider extends GameObject {
 
     @Override
     public void paintIcon(Component c, Graphics g, int x, int y) {
+        float oldX = this.x;
+        float oldY = this.y;
         this.x = x;
         this.y = y + 40;
+        showHealthBar = false;
         draw(g);
+        showHealthBar = true;
+        this.x = oldX;
+        this.y = oldY;
     }
 }

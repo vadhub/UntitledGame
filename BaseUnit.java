@@ -4,9 +4,10 @@ import java.util.List;
 
 public class BaseUnit extends GameObject {
 
-    private static final float BASE_SPEED = 150f;
+    private static final float BASE_SPEED = 20f;
     private static final float BASE_ATTACK_COOLDOWN = 1f;
     private float lastAttackTime = -5f;
+    private boolean showHealthBar = true; // Флаг для отрисовки на иконках
 
     // КООРДИНАТЫ БАШНИ (ПОМЕНЯЙ НА СВОИ)
     private static final float TOWER_X = 500;
@@ -19,7 +20,7 @@ public class BaseUnit extends GameObject {
     public BaseUnit(int id, float x, float y, int size, float speed) {
         super(id, x, y, size, BASE_SPEED, Color.BLACK);
         attackCooldown = BASE_ATTACK_COOLDOWN;
-        attackDamage = 50;  // УВЕЛИЧИЛ УРОН
+        attackDamage = 50;
         health = 100;
         fraction = 2;
     }
@@ -32,31 +33,28 @@ public class BaseUnit extends GameObject {
     public void update(float deltaTime) {
         if (!isAlive) return;
 
-        // ДВИГАЕМСЯ К БАШНЕ
-        float dx = TOWER_X - x;
-        float dy = TOWER_Y - y;
-        float dist = (float) Math.sqrt(dx * dx + dy * dy);
+        // Движение ТОЛЬКО по горизонтали к башне
+        if (x < TOWER_X) {
+            x += BASE_SPEED * deltaTime;
+        } else if (x > TOWER_X) {
+            x -= BASE_SPEED * deltaTime;
+        }
+        // Y не меняем — идём строго прямо!
 
-        if (dist > 10) {
-            // Движение
-            float angle = (float) Math.atan2(dy, dx);
-            x += Math.cos(angle) * BASE_SPEED * deltaTime;
-            y += Math.sin(angle) * BASE_SPEED * deltaTime;
-        } else {
-            // БЬЕМ БАШНЮ КАЖДУЮ СЕКУНДУ
+        // Проверка дистанции для атаки (только по X)
+        float distX = Math.abs(x - TOWER_X);
+        if (distX <= 10) {
             if (engine != null) {
                 float currentTime = engine.getGameTime();
                 if (currentTime - lastAttackTime >= attackCooldown) {
-                    // ИЩЕМ БАШНЮ ВО ВСЕХ ОБЪЕКТАХ
                     List<GameObject> objects = engine.getObjects();
                     if (objects != null) {
                         for (GameObject obj : objects) {
                             if (obj == null) continue;
                             String className = obj.getClass().getSimpleName();
                             if (className.contains("Tower") && obj.isAlive()) {
-                                // НАШЛИ БАШНЮ - БЬЕМ!
                                 obj.takeDamage(attackDamage);
-                                System.out.println("⚾⚾⚾ BASE UNIT HITS " + className + " FOR " + attackDamage + " DAMAGE! ⚾⚾⚾");
+                                System.out.println(" BASE UNIT HITS " + className + " FOR " + attackDamage + " DAMAGE! ");
                                 lastAttackTime = currentTime;
                                 break;
                             }
@@ -139,7 +137,10 @@ public class BaseUnit extends GameObject {
                 Math.round(bx + 105 * k), Math.round(by - 8 * k));
         gBat.dispose();
 
-        drawHealthBar(g2, k);
+        // Полоска здоровья — рисуем только если флаг включен
+        if (showHealthBar) {
+            drawHealthBar(g2, k);
+        }
     }
 
     private void drawHealthBar(Graphics2D g2d, float k) {
@@ -159,9 +160,15 @@ public class BaseUnit extends GameObject {
 
     @Override
     public void paintIcon(Component c, Graphics g, int x, int y) {
+        float oldX = this.x;
+        float oldY = this.y;
         this.x = x;
         this.y = y + 40;
+        showHealthBar = false; // Отключаем полоску для иконки
         draw(g);
+        showHealthBar = true;  // Включаем обратно для игры
+        this.x = oldX;
+        this.y = oldY;
     }
 
     @Override

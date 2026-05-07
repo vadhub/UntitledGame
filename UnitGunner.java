@@ -2,7 +2,6 @@ import java.awt.*;
 import java.util.List;
 
 public class UnitGunner extends GameObject {
-
     // Константы для логики
     private static final int ATTACK_RANGE = 200;
     private static final int DAMAGE = 15;
@@ -14,6 +13,7 @@ public class UnitGunner extends GameObject {
     private long lastAttackTime;
     private transient Engine engine;
     private int currentHealth;
+    private boolean showHealthBar = true; // Флаг для отрисовки на иконках
 
     public UnitGunner() {
         super(0, 0, 0, 50, 0, null);
@@ -24,7 +24,6 @@ public class UnitGunner extends GameObject {
         this.fraction = 1;
         this.lastAttackTime = 0;
         this.target = null;
-        // Спавн у правого края (x = 750, ширина окна 800)
         this.x = 750;
         this.y = 300;
     }
@@ -37,13 +36,8 @@ public class UnitGunner extends GameObject {
         this.fraction = 1;
         this.lastAttackTime = 0;
         this.target = null;
-        // Если x и y не заданы или равны 0 - спавним у правого края
-        if (x <= 0) {
-            this.x = 750;
-        }
-        if (y <= 0) {
-            this.y = 300;
-        }
+        if (x <= 0) this.x = 750;
+        if (y <= 0) this.y = 300;
     }
 
     @Override
@@ -55,6 +49,11 @@ public class UnitGunner extends GameObject {
             if (engine == null) return;
         }
 
+        // Проверяем, нет ли впереди союзника
+        if (isBlockedByAlly()) {
+            return; // Останавливаемся
+        }
+
         findTarget();
 
         if (target != null && target.isAlive()) {
@@ -64,21 +63,15 @@ public class UnitGunner extends GameObject {
             if (distanceToTarget <= ATTACK_RANGE && yDifference <= 50) {
                 attack();
             } else {
-                // Движение к цели
+                // Движение ТОЛЬКО по горизонтали
                 if (target.getX() > this.x) {
                     this.x += MOVE_SPEED * dt;
                 } else {
                     this.x -= MOVE_SPEED * dt;
                 }
-
-                if (target.getY() > this.y) {
-                    this.y += 50 * dt;
-                } else if (target.getY() < this.y) {
-                    this.y -= 50 * dt;
-                }
+                // Убрано движение по Y
             }
         } else {
-            // Если нет цели - просто идем ВЛЕВО (к правому краю экрана)
             this.x -= MOVE_SPEED * dt;
         }
 
@@ -87,9 +80,23 @@ public class UnitGunner extends GameObject {
         }
     }
 
-    /**
-     * Поиск цели - атакуем ВСЕХ, КРОМЕ БАШНИ И СЕБЯ
-     */
+    private boolean isBlockedByAlly() {
+        if (engine == null) return false;
+        List<GameObject> objects = engine.getObjects();
+        if (objects == null) return false;
+
+        for (GameObject obj : objects) {
+            if (obj == null || !obj.isAlive() || obj == this) continue;
+            if (obj.getFraction() != this.fraction) continue;
+
+            // Проверяем, находится ли объект прямо перед нами на той же линии (±10px по Y)
+            if (Math.abs(obj.getY() - this.y) < 10 && obj.getX() > this.x && obj.getX() - this.x < 50) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void findTarget() {
         if (engine == null) return;
 
@@ -102,15 +109,10 @@ public class UnitGunner extends GameObject {
         for (GameObject obj : objects) {
             if (obj == null) continue;
             if (!obj.isAlive()) continue;
-            if (obj == this) continue;  // пропускаем себя
-
-            // пропускаем башню
+            if (obj == this) continue;
             if (obj.getClass().getSimpleName().contains("Tower")) continue;
-
-            // пропускаем других ганнеров (чтобы не дрались между собой)
             if (obj.getClass().getSimpleName().equals("UnitGunner")) continue;
 
-            // Атакуем всё остальное (лучников, всадников и т.д.)
             float distance = Math.abs(obj.getX() - this.x);
             if (distance < minDistance) {
                 minDistance = distance;
@@ -120,7 +122,6 @@ public class UnitGunner extends GameObject {
 
         if (nearest != null) {
             target = nearest;
-            System.out.println("🎯 Ганнер нашёл цель: " + target.getClass().getSimpleName());
         } else {
             target = null;
         }
@@ -133,13 +134,7 @@ public class UnitGunner extends GameObject {
         if (currentTime - lastAttackTime >= ATTACK_COOLDOWN_MS) {
             target.takeDamage(DAMAGE);
             lastAttackTime = currentTime;
-            System.out.println("💥 Ганнер АТАКУЕТ " + target.getClass().getSimpleName() +
-                    "! Урон: " + DAMAGE);
-
-            if (!target.isAlive()) {
-                System.out.println("💀 " + target.getClass().getSimpleName() + " убит!");
-                target = null;
-            }
+            if (!target.isAlive()) target = null;
         }
     }
 
@@ -147,11 +142,8 @@ public class UnitGunner extends GameObject {
     public void takeDamage(int damage) {
         this.currentHealth -= damage;
         this.health = this.currentHealth;
-        System.out.println("💔 Ганнер получил урон: " + damage + ", HP: " + currentHealth);
-
         if (this.currentHealth <= 0) {
             this.isAlive = false;
-            System.out.println("☠️ Ганнер уничтожен!");
         }
     }
 
@@ -165,16 +157,14 @@ public class UnitGunner extends GameObject {
     @Override
     public float getY() { return y; }
 
-    // Метод для спавна у правого края
     public void spawnAtRightEdge(float yPosition) {
-        this.x = 750;  // Отступ от правого края
+        this.x = 750;
         this.y = yPosition;
         this.isAlive = true;
         this.currentHealth = MAX_HEALTH;
         this.health = MAX_HEALTH;
     }
 
-    // ========== ВАШ ДИЗАЙН (НЕ МЕНЯЛ) ==========
     @Override
     public void draw(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
@@ -227,17 +217,33 @@ public class UnitGunner extends GameObject {
         g2.setColor(Color.BLACK);
         g2.drawRoundRect(offsetX + 41, offsetY + 46, 5, 7, 2, 2);
 
-        g2.setColor(Color.RED);
-        g2.fillRect(offsetX + 40, offsetY - 5, 50, 5);
-        g2.setColor(Color.GREEN);
-        int healthPercent = (int)((float)currentHealth / MAX_HEALTH * 50);
-        g2.fillRect(offsetX + 40, offsetY - 5, healthPercent, 5);
-        g2.setColor(Color.BLACK);
-        g2.drawRect(offsetX + 40, offsetY - 5, 50, 5);
+        // Полоска здоровья - рисуем только если флаг включен
+        if (showHealthBar) {
+            g2.setColor(Color.RED);
+            g2.fillRect(offsetX + 40, offsetY - 5, 50, 5);
+            g2.setColor(Color.GREEN);
+            int healthPercent = (int)((float)currentHealth / MAX_HEALTH * 50);
+            g2.fillRect(offsetX + 40, offsetY - 5, healthPercent, 5);
+            g2.setColor(Color.BLACK);
+            g2.drawRect(offsetX + 40, offsetY - 5, 50, 5);
+        }
 
         if (target != null && target.isAlive()) {
             g2.setColor(Color.RED);
             g2.drawLine(offsetX + 60, offsetY + 25, (int)target.getX(), (int)target.getY());
         }
+    }
+
+    @Override
+    public void paintIcon(Component c, Graphics g, int x, int y) {
+        float oldX = this.x;
+        float oldY = this.y;
+        this.x = x;
+        this.y = y;
+        showHealthBar = false;
+        draw(g);
+        showHealthBar = true;
+        this.x = oldX;
+        this.y = oldY;
     }
 }

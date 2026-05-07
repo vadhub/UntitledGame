@@ -8,7 +8,6 @@ public class Controls extends JPanel {
     public Controls(Engine game) {
         this.engine = game;
         this.currency = CurrencyManager.getInstance();
-
         setLayout(new FlowLayout());
 
         // Кнопка BaseUnit - 3 у.к.
@@ -22,7 +21,7 @@ public class Controls extends JPanel {
                 baseUnit.setEngine(game);
                 game.spawnObject(baseUnit);
             } else {
-                System.out.println("Не хватает валюты! Нужно 3 у.к.");
+                System.out.println("Не хватает валюты для BaseUnit! Нужно 3 у.к.");
             }
         }));
 
@@ -43,13 +42,13 @@ public class Controls extends JPanel {
             }
         }));
 
-        // Кнопка Tank (DinoRider) - 7 у.к.
+        // Кнопка Tank - 7 у.к.
         add(new Button("Spawn Tank", new UnitDinoRider(), () -> {
             if (currency.spend(7)) {
                 UnitDinoRider unitDinoRider = new UnitDinoRider();
                 unitDinoRider.setFraction(0);
                 unitDinoRider.setX(0);
-                unitDinoRider.setY(game.getScreenHeight() - 250);
+                unitDinoRider.setY(470);
                 unitDinoRider.setSize(100);
                 unitDinoRider.setSpeed(1);
                 unitDinoRider.setDirection(1);

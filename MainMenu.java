@@ -29,7 +29,7 @@ public class MainMenu extends JFrame {
         gbc.insets = new Insets(12, 12, 12, 12);
 
         // Заголовок
-        JLabel title = new JLabel("⚔️ TOWER BATTLE ⚔️");
+        JLabel title = new JLabel(" TOWER BATTLE ");
         title.setFont(new Font("Arial", Font.BOLD, 32));
         title.setForeground(new Color(255, 215, 0));
         gbc.gridx = 0;
@@ -48,7 +48,7 @@ public class MainMenu extends JFrame {
         panel.add(Box.createVerticalStrut(20), gbc);
 
         // Кнопка СТАРТ
-        JButton startBtn = createStyledButton("▶ СТАРТ ИГРЫ", new Color(46, 204, 113));
+        JButton startBtn = createStyledButton(" СТАРТ ИГРЫ", new Color(46, 204, 113));
         startBtn.addActionListener(e -> {
             dispose();
             Main.startGame();
@@ -57,9 +57,9 @@ public class MainMenu extends JFrame {
         panel.add(startBtn, gbc);
 
         // Кнопка ВЫБОР УРОВНЯ (с простым выбором)
-        JButton levelBtn = createStyledButton("🗺 ВЫБОР УРОВНЯ", new Color(52, 152, 219));
+        JButton levelBtn = createStyledButton("ВЫБОР УРОВНЯ", new Color(52, 152, 219));
         levelBtn.addActionListener(e -> {
-            String[] levels = {"🌟 Лёгкий", "⚡ Средний", "🔥 Сложный"};
+            String[] levels = {" Лёгкий", " Средний", " Сложный"};
             int choice = JOptionPane.showOptionDialog(
                     this,
                     "Выбери сложность:",
@@ -73,16 +73,16 @@ public class MainMenu extends JFrame {
             if (choice >= 0) {
                 selectedLevel = choice + 1;
                 String levelName = choice == 0 ? "Лёгкий" : (choice == 1 ? "Средний" : "Сложный");
-                JOptionPane.showMessageDialog(this, "✅ Выбран уровень: " + levelName + "\nСложность будет применена в игре!");
+                JOptionPane.showMessageDialog(this, " Выбран уровень: " + levelName + "\nСложность будет применена в игре!");
             }
         });
         gbc.gridy = 4;
         panel.add(levelBtn, gbc);
 
         // Кнопка НАСТРОЙКИ
-        JButton settingsBtn = createStyledButton("⚙ НАСТРОЙКИ", new Color(155, 89, 182));
+        JButton settingsBtn = createStyledButton("НАСТРОЙКИ", new Color(155, 89, 182));
         settingsBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "🔧 Настройки будут в следующей версии!");
+            JOptionPane.showMessageDialog(this, " Настройки будут в следующей версии!");
         });
         gbc.gridy = 5;
         panel.add(settingsBtn, gbc);

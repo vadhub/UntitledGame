@@ -1,26 +1,16 @@
 import java.awt.*;
 import java.util.List;
 
-/**
- * Лучник: спавнится, идёт к башне (посередине карты),
- * останавливается и атакует, пока башня не разрушится.
- *
- * by Bebron28 & AmericanCoolBoyUSA777
- */
 public class UnitArcher extends GameObject {
-
     private GameObject currentTarget;
-
-    // настройки лучника
-    private static final float ARCHER_SPEED = 10f;
+    private static final float ARCHER_SPEED = 20f;
     private static final float ARCHER_ATTACK_RANGE = 300f;
-    private static final float ARCHER_ATTACK_COOLDOWN = 4.0f; // 🔥 4 секунды между выстрелами
+    private static final float ARCHER_ATTACK_COOLDOWN = 1.5f;
     private static final float ARROW_SPEED = 600f;
+    private boolean showHealthBar = true;
 
     public UnitArcher() {
         this.fraction = 2;
-        this.attackCooldown = ARCHER_ATTACK_COOLDOWN;
-        this.lastAttackTime = -5f; // Первый выстрел сразу после спавна
     }
 
     public UnitArcher(int id, float x, float y, int size, float speed) {
@@ -36,20 +26,21 @@ public class UnitArcher extends GameObject {
     @Override
     public void update(float deltaTime) {
         if (!isAlive) return;
+        if (isBlockedByAlly()) return;
 
-        // выбор цели, если её нет или она мертва
         if (currentTarget == null || !currentTarget.isAlive()) {
             currentTarget = findTower();
         }
 
         if (currentTarget != null) {
             float dist = distanceTo(currentTarget);
-
             if (dist > attackRange) {
-                // 🔥 Плавное движение к цели с учётом deltaTime
-                moveTowards(currentTarget, deltaTime);
+                if (currentTarget.getX() > this.x) {
+                    this.x += ARCHER_SPEED * deltaTime;
+                } else {
+                    this.x -= ARCHER_SPEED * deltaTime;
+                }
             } else {
-                // атака в радиусе поражения
                 if (canAttack(engine.getGameTime())) {
                     shootAt(currentTarget);
                     lastAttackTime = engine.getGameTime();
@@ -58,27 +49,31 @@ public class UnitArcher extends GameObject {
         }
     }
 
-    /**
-     * Поиск башни на карте.
-     */
+    private boolean isBlockedByAlly() {
+        if (engine == null) return false;
+        List<GameObject> objects = engine.getObjects();
+        if (objects == null) return false;
+        for (GameObject obj : objects) {
+            if (obj == null || !obj.isAlive() || obj == this) continue;
+            if (obj.getFraction() != this.fraction) continue;
+            if (Math.abs(obj.getY() - this.y) < 10 && obj.getX() > this.x && obj.getX() - this.x < 50) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private GameObject findTower() {
         List<GameObject> objects = engine.getObjects();
         for (GameObject obj : objects) {
             if (obj == null || !obj.isAlive()) continue;
             if (obj.getFraction() == fraction) continue;
-
-            // проверка по имени класса (Tower, Tower67 и т.д.)
             String className = obj.getClass().getSimpleName();
-            if (className.contains("Tower")) {
-                return obj;
-            }
+            if (className.contains("Tower")) return obj;
         }
         return null;
     }
 
-    /**
-     * Выстрел по цели.
-     */
     private void shootAt(GameObject target) {
         float angle = Arrow.calculateArrowAngle(x, y, target.getX(), target.getY(), ARROW_SPEED);
         Arrow arrow = new Arrow(x, y, angle, ARROW_SPEED);
@@ -91,36 +86,29 @@ public class UnitArcher extends GameObject {
     public void draw(Graphics g) {
         float k = this.size / 100.0f;
         if (k <= 0) k = 1.0f;
-
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // голова
+        int drawX = Math.round(x);
+        int drawY = Math.round(y);
+
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillOval(drawX - 10, drawY + 115, 70, 10);
+
         g2d.setColor(new Color(255, 218, 185));
-        g2d.fillOval(Math.round(x), Math.round(y),
-                Math.round(70 * k), Math.round(80 * k));
+        g2d.fillOval(drawX, drawY, Math.round(70 * k), Math.round(80 * k));
 
-        // глаза
         g2d.setColor(Color.BLACK);
-        g2d.fillOval(Math.round(x + 25 * k), Math.round(y + 30 * k),
-                Math.round(10 * k), Math.round(12 * k));
-        g2d.fillOval(Math.round(x + 50 * k), Math.round(y + 30 * k),
-                Math.round(10 * k), Math.round(12 * k));
+        g2d.fillOval(Math.round(x + 25 * k), Math.round(y + 30 * k), Math.round(10 * k), Math.round(12 * k));
+        g2d.fillOval(Math.round(x + 50 * k), Math.round(y + 30 * k), Math.round(10 * k), Math.round(12 * k));
 
-        // тело
         g2d.setColor(new Color(70, 130, 180));
-        g2d.fillOval(Math.round(x - 10 * k), Math.round(y + 80 * k),
-                Math.round(90 * k), Math.round(140 * k));
+        g2d.fillOval(Math.round(x - 10 * k), Math.round(y + 80 * k), Math.round(90 * k), Math.round(140 * k));
 
-        // лук (дуга)
         g2d.setColor(new Color(101, 67, 33));
         g2d.setStroke(new BasicStroke(4.0f * k));
-        g2d.drawArc(Math.round(x + 30 * k), Math.round(y + 50 * k),
-                Math.round(100 * k), Math.round(150 * k),
-                270, 190);
+        g2d.drawArc(Math.round(x + 30 * k), Math.round(y + 50 * k), Math.round(100 * k), Math.round(150 * k), 270, 190);
 
-        // тетива
         g2d.setColor(Color.BLACK);
         g2d.setStroke(new BasicStroke(2.0f * k));
         int bowCenterX = Math.round(x + 80 * k);
@@ -128,42 +116,30 @@ public class UnitArcher extends GameObject {
         int bowBottomY = Math.round(y + 200 * k);
         g2d.drawLine(bowCenterX, bowTopY, bowCenterX, bowBottomY);
 
-        // колчан
         g2d.setColor(new Color(139, 69, 19));
-        g2d.fillRect(Math.round(x - 30 * k), Math.round(y + 100 * k),
-                Math.round(25 * k), Math.round(60 * k));
-        g2d.fillOval(Math.round(x - 30 * k), Math.round(y + 95 * k),
-                Math.round(25 * k), Math.round(20 * k));
+        g2d.fillRect(Math.round(x - 30 * k), Math.round(y + 100 * k), Math.round(25 * k), Math.round(60 * k));
+        g2d.fillOval(Math.round(x - 30 * k), Math.round(y + 95 * k), Math.round(25 * k), Math.round(20 * k));
 
-        // стрелы в колчане
         g2d.setColor(Color.DARK_GRAY);
         for (int i = 0; i < 3; i++) {
             int yOffset = 110 + i * 15;
-            g2d.drawLine(Math.round(x - 25 * k), Math.round(y + yOffset * k),
-                    Math.round(x - 10 * k), Math.round(y + yOffset * k));
+            g2d.drawLine(Math.round(x - 25 * k), Math.round(y + yOffset * k), Math.round(x - 10 * k), Math.round(y + yOffset * k));
         }
 
-        // полоска здоровья
-        drawHealthBar(g2d, k);
+        if (showHealthBar) {
+            drawHealthBar(g2d, k);
+        }
     }
 
     private void drawHealthBar(Graphics2D g2d, float k) {
-        int barWidth = 60;
-        int barHeight = 8;
-        int barX = Math.round(x + 5 * k);
-        int barY = Math.round(y - 10 * k);
-
-        // фон (красный)
+        int barWidth = 60, barHeight = 8;
+        int barX = Math.round(x + 5 * k), barY = Math.round(y - 10 * k);
         g2d.setColor(Color.RED);
         g2d.fillRect(barX, barY, barWidth, barHeight);
-
-        // текущее здоровье (зелёный)
         g2d.setColor(Color.GREEN);
         int healthPercent = (int) ((float) health / 100f * barWidth);
         healthPercent = Math.max(0, Math.min(barWidth, healthPercent));
         g2d.fillRect(barX, barY, healthPercent, barHeight);
-
-        // рамка
         g2d.setColor(Color.BLACK);
         g2d.setStroke(new BasicStroke(1));
         g2d.drawRect(barX, barY, barWidth, barHeight);
@@ -171,9 +147,14 @@ public class UnitArcher extends GameObject {
 
     @Override
     public void paintIcon(Component c, Graphics g, int x, int y) {
+        float oldX = this.x, oldY = this.y;
         this.x = x;
         this.y = y;
+        showHealthBar = false;
         draw(g);
+        showHealthBar = true;
+        this.x = oldX;
+        this.y = oldY;
     }
 
     @Override

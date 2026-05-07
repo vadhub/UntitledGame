@@ -12,8 +12,6 @@ public class Engine {
     private final List<GameObject> objects = new ArrayList<>();
     private final Random random = new Random();
     private static Engine engine = null;
-    private float enemySpawnTimer = 0f;
-    private final float ENEMY_SPAWN_INTERVAL = 10f;
 
     private Engine() {
     }
@@ -26,21 +24,11 @@ public class Engine {
     }
 
     public void update(float deltaTime) {
-        enemySpawnTimer += deltaTime;
-        if (enemySpawnTimer >= ENEMY_SPAWN_INTERVAL) {
-            spawnEnemyMob();
-            enemySpawnTimer = 0f;
-        }
-
         this.deltaTime = deltaTime;
         gameTime += deltaTime;
-
-        // Обновляем все объекты
         for (int i = 0; i < objects.size(); i++) {
             objects.get(i).update(deltaTime);
         }
-
-        // Удаляем мертвые
         objects.removeIf(obj -> !obj.isAlive());
     }
 
@@ -58,16 +46,13 @@ public class Engine {
         float x = random.nextInt(screenWidth);
         float y = random.nextInt(screenHeight);
         Color color = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
-
         GameObject newObject = new GameObject(-1, x, y, 30, 100, color);
         spawnObject(newObject);
     }
 
     public void spawnObject(GameObject gameObject) {
-        if (gameObject != null) {
-            synchronized (objects) {
-                objects.add(gameObject);
-            }
+        synchronized (objects) {
+            objects.add(gameObject);
         }
     }
 
@@ -100,64 +85,38 @@ public class Engine {
         Thread spawnThread = new Thread(() -> {
             for (int i = 0; i < pattern.size(); i++) {
                 GameObject elem = pattern.get(i);
-                GameObject newObject = new GameObject(
-                        -1,
-                        elem.getX(),
-                        elem.getY(),
-                        100,
-                        elem.getSpeed(),
-                        elem.getColor()
-                );
+                GameObject newObject = new GameObject(-1, elem.getX(), elem.getY(), 100, elem.getSpeed(), elem.getColor());
                 newObject.setFraction(elem.getFraction());
                 synchronized (objects) {
                     objects.add(newObject);
+                    System.out.println("Объект " + newObject.getId() + " заспавнен");
                 }
                 if (i < pattern.size() - 1) {
                     try {
                         Thread.sleep(delay);
                     } catch (InterruptedException e) {
-                        break;
+                        e.printStackTrace();
                     }
                 }
             }
+            System.out.println("Общий спавн завершен");
         });
         spawnThread.start();
     }
 
-    /**
-     * Плавное движение объекта к цели.
-     * Теперь принимает deltaTime явно, чтобы не зависеть от порядка вызовов.
-     */
-    public void moveTowards(GameObject attacker, GameObject target, float dt) {
+    public void moveTowards(GameObject attacker, GameObject target) {
         if (attacker == null || target == null) return;
         if (!attacker.isAlive() || !target.isAlive()) return;
-
         float dx = target.getX() - attacker.getX();
         float dy = target.getY() - attacker.getY();
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
-
-        // Если расстояние очень маленькое, останавливаемся, чтобы не дрожать
-        if (distance > 1.0f) {
+        if (distance > 0.01f) {
             float speed = attacker.getSpeed();
-            // Нормализуем вектор и умножаем на скорость и время кадра
-            float moveX = (dx / distance) * speed * dt;
-            float moveY = (dy / distance) * speed * dt;
-
+            float moveX = (dx / distance) * speed * deltaTime;
+            float moveY = (dy / distance) * speed * deltaTime;
             attacker.setX(attacker.getX() + moveX);
             attacker.setY(attacker.getY() + moveY);
         }
-    }
-
-    public List<GameObject> getEnemiesFor(int faction) {
-        List<GameObject> enemies = new ArrayList<>();
-        synchronized (objects) {
-            for (GameObject obj : objects) {
-                if (obj.isAlive() && obj.getFraction() != faction) {
-                    enemies.add(obj);
-                }
-            }
-        }
-        return enemies;
     }
 
     public GameObject findNearestEnemy(GameObject self, float range) {
@@ -165,7 +124,6 @@ public class Engine {
         GameObject nearest = null;
         float rangeSq = range * range;
         float minDistanceSq = rangeSq;
-
         synchronized (objects) {
             for (GameObject obj : objects) {
                 if (obj != self && obj.isAlive() && obj.getFraction() != self.getFraction()) {
@@ -180,16 +138,17 @@ public class Engine {
         return nearest;
     }
 
-    public List<GameObject> getObjects() {
-        synchronized (objects) {
-            return new ArrayList<>(objects);
-        }
+    public void setScreenSize(int screenWidth, int screenHeight) {
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
     }
 
-    public void clearObjects() {
-        synchronized (objects) {
-            objects.clear();
-        }
+    public float getGameTime() {
+        return gameTime;
+    }
+
+    public List<GameObject> getObjects() {
+        return objects;
     }
 
     public int getScreenWidth() {
@@ -198,23 +157,5 @@ public class Engine {
 
     public int getScreenHeight() {
         return screenHeight;
-    }
-
-    public void setScreenHeight(int screenHeight) {
-        this.screenHeight = screenHeight;
-    }
-
-    public void setScreenWidth(int screenWidth) {
-        this.screenWidth = screenWidth;
-    }
-
-    public float getGameTime() {
-        return gameTime;
-    }
-
-    private void spawnEnemyMob() {
-        GameObject enemy = new GameObject(-1, 1600, 800, 50, -120f);
-        enemy.setFraction(1);
-        spawnObject(enemy);
     }
 }

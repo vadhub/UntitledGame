@@ -11,7 +11,7 @@ public class CurrencyManager {
             @Override
             public void run() {
                 currency += 5;
-                System.out.println("op +5 у.к. | Всего: " + currency);
+                System.out.println(" +5 у.к. | Всего: " + currency);
             }
         }, 5000, 5000);
     }
