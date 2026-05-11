@@ -1,5 +1,10 @@
 package src.engine;
 
+import src.view.unit.BaseUnit;
+import src.view.unit.UnitArcher;
+import src.view.unit.UnitDinoRider;
+import src.view.unit.UnitGunner;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +34,8 @@ public class Engine {
 
     public void update(float deltaTime) {
         enemySpawnTimer += deltaTime;
-        System.out.println(enemySpawnTimer + " " + ENEMY_SPAWN_INTERVAL);
         if (enemySpawnTimer >= ENEMY_SPAWN_INTERVAL) {
             spawnEnemyMob();
-            System.out.println("enemy!");
             enemySpawnTimer = 0f;
         }
         this.deltaTime = deltaTime;
@@ -51,22 +54,6 @@ public class Engine {
                 }
             }
         }
-    }
-
-    public void spawnObject() {
-        // Случайные координаты
-        float x = random.nextInt(screenWidth);
-        float y = random.nextInt(screenHeight);
-
-        // Случайный цвет
-        Color color = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
-
-        // Создаём объект с заданными параметрами
-        GameObject newObject = new GameObject(
-                -1, x, y, 30, 100, color
-        );
-
-        spawnObject(newObject); // добавляем в список
     }
 
     public void spawnObject(GameObject gameObject) {
@@ -110,12 +97,10 @@ public class Engine {
     }
 
     public void spawnObjectPattern(List<GameObject> pattern, long delay) {
-        // создаёт новый поток
         Thread spawnThread = new Thread(() -> {
             for (int i = 0; i < pattern.size(); i++) {
                 GameObject elem = pattern.get(i);
 
-                // копия объекта создаётся
                 GameObject newObject = new GameObject(
                         -1,
                         elem.getX(),
@@ -126,13 +111,11 @@ public class Engine {
                 );
                 newObject.setFraction(elem.getFraction());
 
-                // она добавляется в список
                 synchronized (objects) {
                     objects.add(newObject);
                     System.out.println("Объект " + newObject.getId() + " заспавнен");
                 }
 
-                // задержка (очередь)
                 if (i < pattern.size() - 1) {
                     try {
                         Thread.sleep(delay);
@@ -145,10 +128,9 @@ public class Engine {
             System.out.println("Общий спавн завершен");
         });
 
-        spawnThread.start(); // запуск потока
+        spawnThread.start();
     }
 
-    // supplier of Pythagoras - движение к цели
     public void moveTowards(GameObject attacker, GameObject target) {
         if (attacker == null || target == null) return;
         if (!attacker.isAlive() || !target.isAlive()) return;
@@ -227,13 +209,54 @@ public class Engine {
         this.screenWidth = screenWidth;
     }
 
+    public float getGameTime() {
+        return gameTime;
+    }
 
-    public float getGameTime() { return gameTime; }
+    // ==================== СПАВН РАЗНЫХ ВРАГОВ ====================
 
+    /**
+     * Спавн врага каждые ENEMY_SPAWN_INTERVAL секунд
+     * Случайным образом выбирается один из трёх типов врагов
+     */
     private void spawnEnemyMob() {
-        GameObject enemy = new GameObject(-1, 10,10, 50, 1f);
-        enemy.setFraction(1);
+        Random random = new Random();
+        int type = random.nextInt(3);
+
+        BaseUnit enemy;
+        float spawnX = 850f;
+        float spawnY;
+
+        switch (type) {
+            case 0:
+                // Лучник
+                enemy = UnitArcher.builder().build();
+                spawnY = 350f;
+                break;
+            case 1:
+                // Всадник на динозавре (с копьём)
+                enemy = UnitDinoRider.builder().build();
+                spawnY = 300f;
+                break;
+            default:
+                // Стрелок с пистолетом
+                enemy = UnitGunner.builder().build();
+                spawnY = 330f;
+                break;
+        }
+
+        // Общие параметры для всех врагов
+        enemy.setX(spawnX);
+        enemy.setY(spawnY);
+        enemy.setSpeed(-10f);           // движение влево
+        enemy.setFraction(1);            // фракция врага
+        enemy.setHealth(100);            // здоровье
+        enemy.setAttackDamage(20);       // урон
+        enemy.setAttackRange(150f);      // дальность атаки
+
         spawnObject(enemy);
 
+        System.out.println("Враг заспавнен: " + enemy.getClass().getSimpleName() +
+                " [x=" + enemy.getX() + ", y=" + enemy.getY() + ", speed=" + enemy.getSpeed() + "]");
     }
 }
