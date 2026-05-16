@@ -9,6 +9,7 @@ public class RoadPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         int w = getWidth(), h = getHeight();
+        Random rand = new Random(42L);
 
         // Фон — зелёная земля
         g.setColor(new Color(220, 240, 220));
@@ -30,6 +31,4 @@ public class RoadPanel extends JPanel {
             g.fillOval(rx, ry, 12, 12);
         }
     }
-
-    private final java.util.Random rand = new Random();
 }

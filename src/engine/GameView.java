@@ -1,7 +1,5 @@
 package src.engine;
 
-import src.view.background.Background;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -9,14 +7,14 @@ import java.awt.event.MouseListener;
 
 public class GameView extends JPanel implements MouseListener {
     private long lastFrameTime;
-    private Background background = new Background();
-    private Engine engine;
-    private CurrencyManager currency;
+    private final Engine engine;
+    private final CurrencyManager currency;
 
     public GameView(Engine engine) {
         this.engine = engine;
         this.currency = CurrencyManager.getInstance();
         lastFrameTime = System.currentTimeMillis();
+        setOpaque(false);
 
         new Timer(16, e -> {
             long now = System.currentTimeMillis();
@@ -31,12 +29,9 @@ public class GameView extends JPanel implements MouseListener {
     }
 
     @Override
-    public void paint(Graphics g) {
-        super.paint(g);
-        background.draw(g, getWidth(), getHeight());
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
         engine.draw(g);
-
-        // ОТОБРАЖЕНИЕ ВАЛЮТЫ
         drawCurrencyPanel(g);
     }
 
@@ -47,30 +42,25 @@ public class GameView extends JPanel implements MouseListener {
         int x = 15;
         int y = 15;
 
-        // Полупрозрачный фон
         g2d.setColor(new Color(0, 0, 0, 180));
         g2d.fillRoundRect(x, y, 120, 45, 12, 12);
 
-        // Золотая рамка
         g2d.setColor(new Color(255, 215, 0));
         g2d.setStroke(new BasicStroke(1.5f));
         g2d.drawRoundRect(x, y, 120, 45, 12, 12);
 
-        // Иконка монеты
         g2d.setColor(new Color(255, 215, 0));
         g2d.fillOval(x + 8, y + 7, 30, 30);
         g2d.setColor(new Color(255, 180, 0));
         g2d.fillOval(x + 10, y + 9, 26, 26);
 
-        // Символ валюты
         g2d.setColor(Color.BLACK);
         g2d.setFont(new Font("Arial", Font.BOLD, 18));
-        g2d.drawString("💰", x + 15, y + 30);
+        g2d.drawString("$", x + 15, y + 30);
 
-        // Количество валюты
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 20));
-        String currencyText = currency.getCurrency() + " у.к.";
+        String currencyText = currency.getCurrency() + " u.e.";
         g2d.drawString(currencyText, x + 48, y + 30);
 
         g2d.dispose();

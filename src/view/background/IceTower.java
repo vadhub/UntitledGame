@@ -6,9 +6,18 @@ import java.awt.*;
 
 public class IceTower extends GameObject {
 
+    private static final int MAX_HEALTH = 250;
 
     // Конструктор по умолчанию
     public IceTower() {
+        this(-3, 250, 360, 100);
+    }
+
+    public IceTower(int id, float x, float y, int size) {
+        super(id, x, y, size, 0f);
+        this.health = MAX_HEALTH;
+        this.attackRange = 0f;
+        this.attackDamage = 0;
     }
 
     // Основной метод рисования башни
@@ -22,8 +31,8 @@ public class IceTower extends GameObject {
 
         // ========== ОСНОВНЫЕ ПАРАМЕТРЫ БАШНИ ==========
         int towerHeight = 400;                    // Общая высота башни
-        int baseY = 400 - 40;             // Y-координата основания
-        int centerX = 500 / 2;             // X-координата центра башни
+        int baseY = Math.round(y);             // Y-координата основания
+        int centerX = Math.round(x);             // X-координата центра башни
 
         // Ширина башни на разных уровнях (сужается кверху)
         int baseWidth = 140;  // Ширина основания
@@ -117,9 +126,31 @@ public class IceTower extends GameObject {
 
         // 6. Название башни под основанием
         drawTowerName(g2d, centerX, baseY + 20);
+        drawHealthBar(g2d, centerX, baseY - towerHeight - 30);
     }
 
-    private void drawTowerName(Graphics2D g2d, int centerX, int i) {
+    private void drawTowerName(Graphics2D g2d, int centerX, int y) {
+        g2d.setFont(new Font("Arial", Font.BOLD, 14));
+        g2d.setColor(new Color(220, 245, 255));
+        String text = "Ice Tower";
+        FontMetrics fm = g2d.getFontMetrics();
+        g2d.drawString(text, centerX - fm.stringWidth(text) / 2, y);
+    }
+
+    private void drawHealthBar(Graphics2D g2d, int centerX, int y) {
+        int barWidth = 120;
+        int barHeight = 12;
+        int barX = centerX - barWidth / 2;
+
+        g2d.setColor(Color.RED);
+        g2d.fillRect(barX, y, barWidth, barHeight);
+
+        float healthPercent = Math.max(0f, Math.min(1f, health / (float) MAX_HEALTH));
+        g2d.setColor(Color.GREEN);
+        g2d.fillRect(barX, y, Math.round(barWidth * healthPercent), barHeight);
+
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(barX, y, barWidth, barHeight);
     }
 
     // ========== МЕТОД РИСОВАНИЯ ЛЕДЯНЫХ ШИПОВ ==========

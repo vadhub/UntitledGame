@@ -3,7 +3,12 @@ package src.engine;
 import javax.swing.*;
 import java.awt.*;
 
-public record MyIcon(GameObject gameObject) implements Icon {
+public class MyIcon implements Icon {
+    private final GameObject gameObject;
+
+    public MyIcon(GameObject gameObject) {
+        this.gameObject = gameObject;
+    }
 
     @Override
     public void paintIcon(Component c, Graphics g, int x, int y) {
