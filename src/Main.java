@@ -5,7 +5,7 @@ import src.engine.CurrencyManager;
 import src.engine.Engine;
 import src.engine.GameView;
 import src.screen.MainMenu;
-import src.view.background.Tower;
+import src.view.background.IceTower;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,7 +29,7 @@ public class Main {
             int towerX = engine.getScreenWidth() / 2 + 200;
             int towerY = engine.getScreenHeight() - 180;
 
-            Tower tower = new Tower(1, (float) towerX, (float) towerY, 100, 0f);
+            IceTower tower = new IceTower(1, (float) towerX, (float) towerY, 100);
             tower.setFraction(2);
             engine.spawnObject(tower);
 
