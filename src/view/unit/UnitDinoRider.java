@@ -11,6 +11,10 @@ import java.awt.*;
  * by Bebron28 & AmericanCoolBoyUSA777
  */
 public class UnitDinoRider extends BaseUnit {
+    private static final int DEFAULT_HEALTH = 300;
+    private static final int DEFAULT_ATTACK_DAMAGE = 30;
+    private static final float DEFAULT_ATTACK_RANGE = 130f;
+    private static final float DEFAULT_ATTACK_COOLDOWN = 1.0f;
 
     // Переменные для анимации атаки
     private boolean isAttacking = false;
@@ -26,6 +30,10 @@ public class UnitDinoRider extends BaseUnit {
     public class Builder extends BaseUnit.Builder {
         private Builder() {
             super();
+            health(DEFAULT_HEALTH);
+            attackDamage(DEFAULT_ATTACK_DAMAGE);
+            attackRange(DEFAULT_ATTACK_RANGE);
+            attackCooldown(DEFAULT_ATTACK_COOLDOWN);
         }
 
         public UnitDinoRider build() {

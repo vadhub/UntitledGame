@@ -22,6 +22,7 @@ public class GameObject implements Cloneable {
 
     protected Color color;
     protected int health;
+    protected int maxHealth = 100;
     protected int attackDamage;
     protected float attackRange;
     protected float attackCooldown;
@@ -126,6 +127,12 @@ public class GameObject implements Cloneable {
 
         public Builder health(int health) {
             GameObject.this.health = health;
+            GameObject.this.maxHealth = Math.max(GameObject.this.maxHealth, health);
+            return this;
+        }
+
+        public Builder maxHealth(int maxHealth) {
+            GameObject.this.maxHealth = maxHealth;
             return this;
         }
 
@@ -329,6 +336,15 @@ public class GameObject implements Cloneable {
 
     public void setHealth(int health) {
         this.health = health;
+        this.maxHealth = Math.max(this.maxHealth, health);
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
+    }
+
+    public void setMaxHealth(int maxHealth) {
+        this.maxHealth = maxHealth;
     }
 
     public int getAttackDamage() {
