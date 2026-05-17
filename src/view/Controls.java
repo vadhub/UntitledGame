@@ -26,7 +26,7 @@ public class Controls extends JPanel {
             if (currency.spend(3)) {
                 BaseUnit baseUnit = (BaseUnit) BaseUnit.builder()
                         .fraction(fractionFriend)
-                        .speed(1)
+                        .speed(Engine.BASE_UNIT_SPEED)
                         .attackRange(130)
                         .x(playerSpawnX)
                         .y(game.getScreenHeight() - 150)
@@ -41,7 +41,7 @@ public class Controls extends JPanel {
             if (currency.spend(5)) {
                 UnitArcher unitArcher = (UnitArcher) UnitArcher.builder()
                         .fraction(fractionFriend)
-                        .speed(1)
+                        .speed(Engine.ARCHER_SPEED)
                         .attackRange(250)
                         .x(playerSpawnX)
                         .y(game.getScreenHeight() - 250)
@@ -59,7 +59,7 @@ public class Controls extends JPanel {
             if (currency.spend(7)) {
                 UnitDinoRider unitDinoRider = (UnitDinoRider) UnitDinoRider.builder()
                         .fraction(fractionFriend)
-                        .speed(1)
+                        .speed(Engine.TANK_SPEED)
                         .attackRange(130)
                         .x(playerSpawnX)
                         .y(game.getScreenHeight() - 230)

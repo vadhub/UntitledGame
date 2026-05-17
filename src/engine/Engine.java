@@ -25,6 +25,9 @@ public class Engine {
     private static final float ENEMY_SPAWN_INTERVAL = 5f;
     private static final float GROUND_Y = 420f;            // УРОВЕНЬ ЗЕМЛИ
     private static final float SPAWN_X = 1600f;            // за правой границей окна
+    public static final int BASE_UNIT_SPEED = 90;
+    public static final int ARCHER_SPEED = 120;
+    public static final int TANK_SPEED = 100;
 
     private static Engine instance;
 
@@ -171,7 +174,7 @@ public class Engine {
                 .attackRange(150f)
                 .build();
 
-        enemy.setSpeed(-80f);      // движение влево
+        enemy.setSpeed(-BASE_UNIT_SPEED);      // движение влево
         enemy.setFraction(1);      // фракция врага
         enemy.setDirection(-1);    // ВРАГИ ИДУТ ЛИЦОМ ВПЕРЁД
 
@@ -187,7 +190,7 @@ public class Engine {
                 .attackRange(200f)
                 .build();
 
-        enemy.setSpeed(-80f);
+        enemy.setSpeed(-ARCHER_SPEED);
         enemy.setFraction(1);
         enemy.setDirection(-1);
 
@@ -204,7 +207,7 @@ public class Engine {
                 .attackRange(120f)
                 .build();
 
-        enemy.setSpeed(-60f);      // танк медленнее
+        enemy.setSpeed(-TANK_SPEED);      // движение влево
         enemy.setFraction(1);
         enemy.setDirection(-1);
 
