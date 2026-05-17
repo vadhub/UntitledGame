@@ -33,8 +33,14 @@ public class GameView extends JPanel implements MouseListener {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        background.draw(g, getWidth(), getHeight());
-        engine.draw(g);
+        Graphics2D worldGraphics = (Graphics2D) g.create();
+        float scaleX = getWidth() / (float) engine.getScreenWidth();
+        float scaleY = getHeight() / (float) engine.getScreenHeight();
+        worldGraphics.scale(scaleX, scaleY);
+
+        background.draw(worldGraphics, engine.getScreenWidth(), engine.getScreenHeight());
+        engine.draw(worldGraphics);
+        worldGraphics.dispose();
 
         // ОТОБРАЖЕНИЕ ВАЛЮТЫ
         drawCurrencyPanel(g);

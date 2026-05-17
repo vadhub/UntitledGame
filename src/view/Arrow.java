@@ -14,8 +14,8 @@ import java.util.List;
  * edit by AmericanCoolBoyUSA777
  */
 public class Arrow extends GameObject {
-    private float vx, vy;
-    private static final float GRAVITY = 800f;
+    protected float vx, vy;
+    protected static final float GRAVITY = 800f;
 
     public Arrow(float startX, float startY, float angleDeg, float speed) {
         super(-2, startX, startY, 30, speed);

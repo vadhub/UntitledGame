@@ -64,6 +64,6 @@ public class HealthBar {
         if (obj instanceof Tower) {
             return ((Tower) obj).getMaxHealth();
         }
-        return obj.getHealth();
+        return obj.getMaxHealth();
     }
 }

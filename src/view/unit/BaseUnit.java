@@ -7,6 +7,10 @@ import java.awt.*;
 import java.awt.geom.Path2D;
 
 public class BaseUnit extends GameObject {
+    private static final int DEFAULT_HEALTH = 100;
+    private static final int DEFAULT_ATTACK_DAMAGE = 20;
+    private static final float DEFAULT_ATTACK_RANGE = 150f;
+    private static final float DEFAULT_ATTACK_COOLDOWN = 1.0f;
 
     protected boolean isVisibleHealthBar = true;
 
@@ -17,6 +21,10 @@ public class BaseUnit extends GameObject {
     public class Builder extends GameObject.Builder {
         Builder() {
             super();
+            health(DEFAULT_HEALTH);
+            attackDamage(DEFAULT_ATTACK_DAMAGE);
+            attackRange(DEFAULT_ATTACK_RANGE);
+            attackCooldown(DEFAULT_ATTACK_COOLDOWN);
         }
 
         public Builder notVisibleHeathBar() {
@@ -155,7 +163,7 @@ public class BaseUnit extends GameObject {
         g2d.setColor(Color.RED);
         g2d.fillRect(barX, barY, barWidth, barHeight);
         g2d.setColor(Color.GREEN);
-        int healthPercent = (int) ((float) health / 100f * barWidth);
+        int healthPercent = (int) ((float) health / Math.max(1, getMaxHealth()) * barWidth);
         healthPercent = Math.max(0, Math.min(barWidth, healthPercent));
         g2d.fillRect(barX, barY, healthPercent, barHeight);
         g2d.setColor(Color.BLACK);

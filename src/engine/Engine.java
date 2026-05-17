@@ -3,7 +3,7 @@ package src.engine;
 import src.view.unit.BaseUnit;
 import src.view.unit.UnitArcher;
 import src.view.unit.UnitDinoRider;
-import src.view.unit.UnitGunner;
+import src.view.unit.UnitFireArcher;
 import src.view.Arrow;
 
 import java.awt.*;
@@ -85,7 +85,7 @@ public class Engine {
 
                     if (unit instanceof UnitDinoRider) {
                         unit.setY(GROUND_Y + 170);
-                    } else if (unit instanceof UnitArcher) {
+                    } else if (unit instanceof UnitArcher || unit instanceof UnitFireArcher) {
                         unit.setY(GROUND_Y);
                     } else {
                         unit.setY(GROUND_Y + 200);
@@ -169,6 +169,7 @@ public class Engine {
                 .health(100)
                 .attackDamage(20)
                 .attackRange(150f)
+                .attackCooldown(1.0f)
                 .build();
 
         enemy.setSpeed(-80f);      // движение влево
@@ -185,6 +186,7 @@ public class Engine {
                 .health(100)
                 .attackDamage(15)
                 .attackRange(200f)
+                .attackCooldown(2.0f)
                 .build();
 
         enemy.setSpeed(-80f);
@@ -202,6 +204,7 @@ public class Engine {
                 .health(300)      // много здоровья (танк)
                 .attackDamage(30)
                 .attackRange(120f)
+                .attackCooldown(1.0f)
                 .build();
 
         enemy.setSpeed(-60f);      // танк медленнее
