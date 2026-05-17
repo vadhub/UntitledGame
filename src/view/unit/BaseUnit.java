@@ -151,7 +151,16 @@ public class BaseUnit extends GameObject {
         int barWidth = 60;
         int barHeight = 8;
         int barX = Math.round(x + 5 * k);
-        int barY = Math.round(y - 10 * k);
+        int barY;
+
+        if (this instanceof UnitArcher) {
+            barY = Math.round(y - 10 * k);
+        } else if (this instanceof UnitDinoRider) {
+            barY = Math.round(y - 95 * k);
+        } else {
+            barY = Math.round(y - 80 * k);
+        }
+
         g2d.setColor(Color.RED);
         g2d.fillRect(barX, barY, barWidth, barHeight);
         g2d.setColor(Color.GREEN);

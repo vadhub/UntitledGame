@@ -103,7 +103,19 @@ public class Engine {
         synchronized (objects) {
             for (GameObject obj : objects) {
                 if (obj.isAlive()) {
-                    obj.draw(g);
+                    if (obj instanceof UnitArcher) {
+                        Graphics2D g2d = (Graphics2D) g.create();
+                        float drawScale = 0.72f;
+                        float anchorX = obj.getX();
+                        float anchorY = obj.getY();
+                        g2d.translate(anchorX, anchorY);
+                        g2d.scale(drawScale, drawScale);
+                        g2d.translate(-anchorX, -anchorY);
+                        obj.draw(g2d);
+                        g2d.dispose();
+                    } else {
+                        obj.draw(g);
+                    }
                 }
             }
         }

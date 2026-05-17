@@ -84,6 +84,10 @@ public class Tower extends GameObject {
         this(id, x, y, size, TowerType.STONE, 0);
     }
 
+    public Tower(int id, float x, float y, int size, float xOffset) {
+        this(id, x, y, size, TowerType.STONE, xOffset);
+    }
+
     private void validateThresholds(float degradeThresholdStoneToWooden, float degradeThresholdWoodenToRuined) {
         if (degradeThresholdStoneToWooden < 0f || degradeThresholdStoneToWooden > 1f) {
             throw new IllegalArgumentException("degradeThresholdStoneToWooden must be between 0 and 1");
