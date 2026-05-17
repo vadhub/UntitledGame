@@ -5,6 +5,7 @@ import src.view.unit.UnitArcher;
 import src.view.unit.UnitDinoRider;
 import src.view.unit.UnitGunner;
 import src.view.Arrow;
+import src.view.background.Tower;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -21,6 +22,9 @@ public class Engine {
     private float gameTime;
     private int waveIndex = 0; // счётчик волн для паттерна
     private int frameCounter = 0;
+    private boolean levelFinished = false;
+    private boolean playerWon = false;
+    private String levelResultMessage = "";
 
     private static final float ENEMY_SPAWN_INTERVAL = 5f;
     private static final float GROUND_Y = 420f;            // УРОВЕНЬ ЗЕМЛИ
@@ -45,7 +49,24 @@ public class Engine {
         this.screenHeight = 800;
     }
 
+    public void resetLevel() {
+        synchronized (objects) {
+            objects.clear();
+        }
+        enemySpawnTimer = 0f;
+        gameTime = 0f;
+        waveIndex = 0;
+        frameCounter = 0;
+        levelFinished = false;
+        playerWon = false;
+        levelResultMessage = "";
+    }
+
     public void update(float deltaTime) {
+        if (levelFinished) {
+            return;
+        }
+
         enemySpawnTimer += deltaTime;
         if (enemySpawnTimer >= ENEMY_SPAWN_INTERVAL) {
             spawnEnemyByPattern(); // вызываем ПАТТЕРН вместо случайного спавна
@@ -60,6 +81,9 @@ public class Engine {
                 GameObject obj = objects.get(i);
                 obj.update(deltaTime);
                 if (!obj.isAlive()) {
+                    if (obj instanceof Tower) {
+                        finishLevel(((Tower) obj).getFraction() == 1);
+                    }
                     objects.remove(i);
                     i--;
                 }
@@ -214,7 +238,7 @@ public class Engine {
     //  ОСНОВНЫЕ МЕТОДЫ
 
     public void spawnObject(GameObject gameObject) {
-        if (gameObject != null) {
+        if (gameObject != null && !levelFinished) {
             synchronized (objects) {
                 objects.add(gameObject);
                 System.out.println("Объект заспавнен: " + gameObject.getClass().getSimpleName());
@@ -283,6 +307,30 @@ public class Engine {
 
     public List<GameObject> getObjects() {
         return objects;
+    }
+
+    private void finishLevel(boolean playerWon) {
+        if (levelFinished) {
+            return;
+        }
+
+        this.levelFinished = true;
+        this.playerWon = playerWon;
+        this.levelResultMessage = playerWon
+                ? "Победа! Вражеская башня уничтожена."
+                : "Поражение! Дружественная башня уничтожена.";
+    }
+
+    public boolean isLevelFinished() {
+        return levelFinished;
+    }
+
+    public boolean isPlayerWon() {
+        return playerWon;
+    }
+
+    public String getLevelResultMessage() {
+        return levelResultMessage;
     }
 
     /**

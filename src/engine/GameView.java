@@ -1,5 +1,6 @@
 package src.engine;
 
+import src.screen.MainMenu;
 import src.view.background.Background;
 
 import javax.swing.*;
@@ -12,22 +13,47 @@ public class GameView extends JPanel implements MouseListener {
     private Background background = new Background();
     private Engine engine;
     private CurrencyManager currency;
+    private Timer gameTimer;
+    private boolean resultShown = false;
 
     public GameView(Engine engine) {
         this.engine = engine;
         this.currency = CurrencyManager.getInstance();
         lastFrameTime = System.currentTimeMillis();
 
-        new Timer(16, e -> {
+        gameTimer = new Timer(16, e -> {
             long now = System.currentTimeMillis();
             float deltaTime = (now - lastFrameTime) / 1000.0f;
             lastFrameTime = now;
             if (deltaTime > 0.05f) deltaTime = 0.05f;
             engine.update(deltaTime);
             repaint();
-        }).start();
+            showLevelResultIfNeeded();
+        });
+        gameTimer.start();
 
         addMouseListener(this);
+    }
+
+    private void showLevelResultIfNeeded() {
+        if (!engine.isLevelFinished() || resultShown) {
+            return;
+        }
+
+        resultShown = true;
+        gameTimer.stop();
+        JOptionPane.showMessageDialog(
+                this,
+                engine.getLevelResultMessage(),
+                engine.isPlayerWon() ? "Победа" : "Поражение",
+                engine.isPlayerWon() ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.WARNING_MESSAGE
+        );
+
+        Window gameWindow = SwingUtilities.getWindowAncestor(this);
+        if (gameWindow != null) {
+            gameWindow.dispose();
+        }
+        new MainMenu();
     }
 
     @Override
